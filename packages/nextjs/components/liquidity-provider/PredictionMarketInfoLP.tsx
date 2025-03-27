@@ -61,7 +61,7 @@ export function PredictionMarketInfoLP() {
   const optionToken1 = prediction[8];
   const winningToken = prediction[10];
   const initialProbability = prediction[14];
-  const percentageLocked = prediction[15];
+  const percentageLocked = prediction[15] * BigInt(2);
 
   if (!totalSupply) return null;
 
