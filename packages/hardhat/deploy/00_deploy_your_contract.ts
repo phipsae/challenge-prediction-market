@@ -1,7 +1,7 @@
 import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
-
+import { ethers } from "hardhat";
 /**
  * Deploys a contract named "YourContract" using the deployer account and
  * constructor arguments set to the deployer address
@@ -22,23 +22,34 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
-  await deploy("YourContract", {
+  const question = "Will the green car win the race?";
+  const initialLiquidity = ethers.parseEther("1");
+  const initialTokenValue = ethers.parseEther("0.01");
+  const initialProbability = 50;
+  const percentageLocked = 10;
+
+  await deploy("PredictionMarket", {
     from: deployer,
     // Contract constructor arguments
-    args: [deployer],
+    args: [deployer, question, initialTokenValue, initialProbability, percentageLocked],
     log: true,
+    value: initialLiquidity.toString(),
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
     // automatically mining the contract deployment transaction. There is no effect on live networks.
     autoMine: true,
   });
 
   // Get the deployed contract to interact with it after deploying.
-  const yourContract = await hre.ethers.getContract<Contract>("YourContract", deployer);
-  console.log("👋 Initial greeting:", await yourContract.greeting());
+  const predictionMarket = await hre.ethers.getContract<Contract>("PredictionMarket", deployer);
+  console.log("👋 Initial greeting:", await predictionMarket.i_question());
+  const yesToken = await predictionMarket.i_YesToken;
+  const noToken = await predictionMarket.i_NoToken;
+  console.log("👋 Yes token:", yesToken);
+  console.log("👋 No token:", noToken);
 };
 
 export default deployYourContract;
 
 // Tags are useful if you have multiple deploy files and only want to run one of them.
 // e.g. yarn deploy --tags YourContract
-deployYourContract.tags = ["YourContract"];
+deployYourContract.tags = ["PredictionMarket"];
