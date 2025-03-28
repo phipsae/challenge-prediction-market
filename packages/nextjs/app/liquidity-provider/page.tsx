@@ -3,6 +3,7 @@ import { AddRemoveLiquidity } from "~~/components/liquidity-provider/AddRemoveLi
 import { LPAddress } from "~~/components/liquidity-provider/LPAddress";
 import { PredictionMarketInfoLP } from "~~/components/liquidity-provider/PredictionMarketInfoLP";
 import { ResolveMarketAndWithdraw } from "~~/components/liquidity-provider/ResolveMarketAndWithdraw";
+import Race from "~~/components/race/Race";
 import { PredictionMarketInfo } from "~~/components/user/PredictionMarketInfo";
 import { getMetadata } from "~~/utils/scaffold-eth/getMetadata";
 
@@ -27,6 +28,7 @@ const LiquidityProvider: NextPage = () => {
                 </div>
                 <div className="border-b pb-4">
                   <PredictionMarketInfo />
+                  <Race />
                 </div>
                 <div>
                   <AddRemoveLiquidity />
