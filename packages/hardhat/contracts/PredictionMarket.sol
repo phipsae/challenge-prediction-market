@@ -118,12 +118,13 @@ contract PredictionMarket is Ownable {
         i_NoToken = new PredictionMarketToken("No", "N", initialTokenAmount, msg.sender);
 
         if (_percentageToLock > 0) {
-            uint256 initialYesAmount = (initialTokenAmount * _initialYesProbability * _percentageToLock * 2) / 10000;
-            uint256 initialNoAmount =
+            uint256 initialYesAmountLocked =
+                (initialTokenAmount * _initialYesProbability * _percentageToLock * 2) / 10000;
+            uint256 initialNoAmountLocked =
                 (initialTokenAmount * (100 - _initialYesProbability) * _percentageToLock * 2) / 10000;
 
-            bool success1 = i_YesToken.transfer(msg.sender, initialYesAmount);
-            bool success2 = i_NoToken.transfer(msg.sender, initialNoAmount);
+            bool success1 = i_YesToken.transfer(msg.sender, initialYesAmountLocked);
+            bool success2 = i_NoToken.transfer(msg.sender, initialNoAmountLocked);
             if (!success1 || !success2) {
                 revert PredictionMarket__TokenTransferFailed();
             }
