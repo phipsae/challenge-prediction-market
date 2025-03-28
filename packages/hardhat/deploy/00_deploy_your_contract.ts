@@ -41,11 +41,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
 
   // Get the deployed contract to interact with it after deploying.
   const predictionMarket = await hre.ethers.getContract<Contract>("PredictionMarket", deployer);
-  console.log("👋 Initial greeting:", await predictionMarket.i_question());
-  const yesToken = await predictionMarket.i_YesToken;
-  const noToken = await predictionMarket.i_NoToken;
-  console.log("👋 Yes token:", yesToken);
-  console.log("👋 No token:", noToken);
+  console.log("👋 Initial greeting:", await predictionMarket.s_question());
 };
 
 export default deployYourContract;
