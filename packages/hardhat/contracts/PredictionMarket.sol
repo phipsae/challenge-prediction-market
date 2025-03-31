@@ -62,10 +62,10 @@ contract PredictionMarket is Ownable {
     // event TokensPurchased(address indexed buyer, Option option, u int256 amount, uint256 ethAmount);
     // event TokensSold(address indexed seller, Option option, uint256 amount, uint256 ethAmount);
     // event WinningTokensRedeemed(address indexed redeemer, uint256 amount, uint256 ethAmount);
-    // event MarketReported(address indexed oracle, Option winningOption, address winningToken);
+    event MarketReported(address indexed oracle, Option winningOption, address winningToken);
     // event MarketResolved(address indexed resolver, uint256 totalEthToSend);
-    // event LiquidityAdded(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
-    // event LiquidityRemoved(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
+    event LiquidityAdded(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
+    event LiquidityRemoved(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
 
     /////////////////
     /// Modifiers ///
@@ -135,15 +135,13 @@ contract PredictionMarket is Ownable {
     }
 
     function addLiquidity() external payable onlyOwner {
-        // if (s_isReported) {
-        //     revert PredictionMarket__PredictionAlreadyResolved();
-        // }
-        // s_ethCollateral += msg.value;
+        //// CHECKPOINT 4 ////
+        s_ethCollateral += msg.value;
 
-        // s_yesToken.mint(address(this), (msg.value * PRECISION) / s_initialTokenValue);
-        // s_noToken.mint(address(this), (msg.value * PRECISION) / s_initialTokenValue);
+        s_yesToken.mint(address(this), (msg.value * PRECISION) / s_initialTokenValue);
+        s_noToken.mint(address(this), (msg.value * PRECISION) / s_initialTokenValue);
 
-        // emit LiquidityAdded(msg.sender, msg.value, (msg.value * PRECISION) / s_initialTokenValue);
+        emit LiquidityAdded(msg.sender, msg.value, (msg.value * PRECISION) / s_initialTokenValue);
     }
 
     /**
@@ -151,27 +149,28 @@ contract PredictionMarket is Ownable {
      * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
      */
     function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner {
-        // uint256 amountTokenToBurn = (_ethToWithdraw / s_initialTokenValue) * PRECISION;
+        //// CHECKPOINT 4 ////
+        uint256 amountTokenToBurn = (_ethToWithdraw / s_initialTokenValue) * PRECISION;
 
-        // if (amountTokenToBurn > (s_yesToken.balanceOf(address(this)))) {
-        //     revert PredictionMarket__InsufficientTokenReserve();
-        // }
+        if (amountTokenToBurn > (s_yesToken.balanceOf(address(this)))) {
+            revert PredictionMarket__InsufficientTokenReserve();
+        }
 
-        // if (amountTokenToBurn > (s_noToken.balanceOf(address(this)))) {
-        //     revert PredictionMarket__InsufficientTokenReserve();
-        // }
+        if (amountTokenToBurn > (s_noToken.balanceOf(address(this)))) {
+            revert PredictionMarket__InsufficientTokenReserve();
+        }
 
-        // s_ethCollateral -= _ethToWithdraw;
+        s_ethCollateral -= _ethToWithdraw;
 
-        // s_yesToken.burn(address(this), amountTokenToBurn);
-        // s_noToken.burn(address(this), amountTokenToBurn);
+        s_yesToken.burn(address(this), amountTokenToBurn);
+        s_noToken.burn(address(this), amountTokenToBurn);
 
-        // (bool success,) = msg.sender.call{value: _ethToWithdraw}("");
-        // if (!success) {
-        //     revert PredictionMarket__ETHTransferFailed();
-        // }
+        (bool success,) = msg.sender.call{value: _ethToWithdraw}("");
+        if (!success) {
+            revert PredictionMarket__ETHTransferFailed();
+        }
 
-        // emit LiquidityRemoved(msg.sender, _ethToWithdraw, amountTokenToBurn);
+        emit LiquidityRemoved(msg.sender, _ethToWithdraw, amountTokenToBurn);
     }
 
     /**
@@ -179,13 +178,13 @@ contract PredictionMarket is Ownable {
      * @param _winningOption The winning option (YES or NO)
      */
     function report(Option _winningOption) external onlyPredictionOpen withValidOption(_winningOption) {
-        // if (msg.sender != s_oracle) {
-        //     revert PredictionMarket__OnlyOracleCanReport();
-        // }
-        // // Set winning option
-        // s_winningToken = _winningOption == Option.YES ? s_yesToken : s_noToken;
-        // s_isReported = true;
-        // emit MarketReported(msg.sender, _winningOption, address(s_winningToken));
+        if (msg.sender != s_oracle) {
+            revert PredictionMarket__OnlyOracleCanReport();
+        }
+        // Set winning option
+        s_winningToken = _winningOption == Option.YES ? s_yesToken : s_noToken;
+        s_isReported = true;
+        emit MarketReported(msg.sender, _winningOption, address(s_winningToken));
     }
 
     /**

@@ -318,10 +318,7 @@ contract PredictionMarketSolution is Ownable {
         return _calculatePriceInEth(_option, _tradingAmount, true);
     }
 
-    function addLiquidity() external payable onlyOwner {
-        if (s_isReported) {
-            revert PredictionMarket__PredictionAlreadyResolved();
-        }
+    function addLiquidity() external payable onlyOwner onlyPredictionOpen {
         s_ethCollateral += msg.value;
 
         i_YesToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
@@ -334,7 +331,7 @@ contract PredictionMarketSolution is Ownable {
      * @notice Remove liquidity from the prediction market and burn corresponding tokens, if you remove liquidity before prediction ends you got no share of lpReserve
      * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
      */
-    function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner {
+    function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner onlyPredictionOpen {
         uint256 amountTokenToBurn = (_ethToWithdraw / i_initialTokenValue) * PRECISION;
 
         if (amountTokenToBurn > (i_YesToken.balanceOf(address(this)))) {
