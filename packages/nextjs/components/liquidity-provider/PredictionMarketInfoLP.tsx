@@ -8,9 +8,14 @@ import { erc20Abi } from "~~/components/constants";
 import { useScaffoldReadContract, useSelectedNetwork } from "~~/hooks/scaffold-eth";
 
 export function PredictionMarketInfoLP() {
-  const { data: prediction, isLoading } = useScaffoldReadContract({
+  const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
     functionName: "prediction",
+  });
+
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
   });
 
   const { data: totalSupply, queryKey } = useReadContract({
@@ -33,15 +38,7 @@ export function PredictionMarketInfoLP() {
     queryClient.invalidateQueries({ queryKey });
   }, [blockNumber, queryClient, queryKey]);
 
-  if (isLoading)
-    return (
-      <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
-        <p className="text-base-content">Loading prediction market...</p>
-      </div>
-    );
-
-  if (!prediction)
+  if (!owner)
     return (
       <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
@@ -49,31 +46,29 @@ export function PredictionMarketInfoLP() {
       </div>
     );
 
-  const token1Reserve = prediction[5];
-  const token2Reserve = prediction[6];
-  const ethCollateral = prediction[11];
-  const lpTradingRevenue = prediction[12];
+  const yesTokenReserve = prediction?.[5] ?? BigInt(0);
+  const noTokenReserve = prediction?.[6] ?? BigInt(0);
+  const ethCollateral = prediction?.[11] ?? BigInt(0);
+  const lpTradingRevenue = prediction?.[12] ?? BigInt(0);
 
-  const tokenValue = prediction[4];
-  const predictionOutcome1 = prediction[1];
-  const predictionOutcome2 = prediction[2];
-  const isReported = prediction[7];
-  const optionToken1 = prediction[8];
-  const winningToken = prediction[10];
-  const initialProbability = prediction[14];
-  const percentageLocked = prediction[15] * BigInt(2);
+  const tokenValue = prediction?.[4] ?? BigInt(0);
+  const yesOutcome = prediction?.[1] ?? "Yes";
+  const noOutcome = prediction?.[2] ?? "No";
+  const isReported = prediction?.[7] ?? false;
+  const yesToken = prediction?.[8] ?? "0x0000000000000000000000000000000000000000";
+  const winningToken = prediction?.[10] ?? "0x0000000000000000000000000000000000000000";
+  const initialProbability = prediction?.[14] ?? BigInt(50);
+  const percentageLocked = prediction?.[15] ?? BigInt(0);
 
-  if (!totalSupply) return null;
-
-  const yesTokenLocked = (totalSupply * BigInt(percentageLocked) * BigInt(initialProbability)) / BigInt(100 * 100);
+  const yesTokenLocked =
+    ((totalSupply ?? BigInt(0)) * BigInt(percentageLocked) * BigInt(initialProbability)) / BigInt(100 * 100);
   const noTokenLocked =
-    (totalSupply * BigInt(percentageLocked) * (BigInt(100) - BigInt(initialProbability))) / BigInt(100 * 100);
-  const yesTokenSold = totalSupply - yesTokenLocked - token1Reserve;
-  const noTokenSold = totalSupply - noTokenLocked - token2Reserve;
+    ((totalSupply ?? BigInt(0)) * BigInt(percentageLocked) * (BigInt(100) - BigInt(initialProbability))) /
+    BigInt(100 * 100);
+  const yesTokenSold = (totalSupply ?? BigInt(0)) - yesTokenLocked - yesTokenReserve;
+  const noTokenSold = (totalSupply ?? BigInt(0)) - noTokenLocked - noTokenReserve;
 
-  // const yesTokenSold =
-
-  const winningOption = winningToken === optionToken1 ? predictionOutcome1 : predictionOutcome2;
+  const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
   return (
     <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
@@ -119,75 +114,75 @@ export function PredictionMarketInfoLP() {
           <div className="grid grid-cols-2 gap-4">
             {/* Yes Token */}
             <div className="bg-base-200 p-4 rounded-lg border-4 border-green-500">
-              <h2 className="text-2xl font-semibold mb-2">&quot;{predictionOutcome1}&quot; Token</h2>
+              <h2 className="text-2xl font-semibold mb-2">&quot;{yesOutcome}&quot; Token</h2>
               <h3 className="text-lg mb-2">
-                Amount of {predictionOutcome1} tokens{" "}
-                <span className="font-bold">locked away by prediction market</span>
+                Amount of {yesOutcome} tokens <span className="font-bold">locked away by prediction market</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(yesTokenLocked))).toFixed(2)} tokens</div>
 
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt(((yesTokenLocked ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {predictionOutcome1})
+                ETH if Oracle reports {yesOutcome})
               </h3>
 
               <h3 className="text-lg mb-2 border-t-4 pt-2">
-                Amount of {predictionOutcome1} tokens <span className="font-bold">held by prediction market</span>
+                Amount of {yesOutcome} tokens <span className="font-bold">held by prediction market</span>
               </h3>
               <div className="stat-value text-lg">
-                {Number(formatEther(BigInt(token1Reserve ?? 0))).toFixed(2)} tokens
+                {Number(formatEther(BigInt(yesTokenReserve ?? 0))).toFixed(2)} tokens
               </div>
 
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
-                {Number(formatEther(BigInt(((token1Reserve ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {predictionOutcome1})
+                {Number(formatEther(BigInt(((yesTokenReserve ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(
+                  2,
+                )}{" "}
+                ETH if Oracle reports {yesOutcome})
               </h3>
               <h3 className="text-lg mb-2 border-t-4 pt-2">
-                Amount of {predictionOutcome1} <span className="font-bold">tokens sold</span>
+                Amount of {yesOutcome} <span className="font-bold">tokens sold</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(yesTokenSold))).toFixed(2)} tokens</div>
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt((BigInt(yesTokenSold) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {predictionOutcome1})
+                ETH if Oracle reports {yesOutcome})
               </h3>
             </div>
 
             {/* No Token */}
             <div className="bg-base-200 p-4 rounded-lg border-4 border-red-500">
-              <h2 className="text-2xl font-semibold mb-2">&quot;{predictionOutcome2}&quot; Token</h2>
+              <h2 className="text-2xl font-semibold mb-2">&quot;{noOutcome}&quot; Token</h2>
               <h3 className="text-lg mb-2">
-                Amount of {predictionOutcome2} tokens{" "}
-                <span className="font-bold">locked away by prediction market</span>
+                Amount of {noOutcome} tokens <span className="font-bold">locked away by prediction market</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(noTokenLocked))).toFixed(2)} tokens</div>
 
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt(((noTokenLocked ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {predictionOutcome2})
+                ETH if Oracle reports {noOutcome})
               </h3>
               <h3 className="text-lg mb-2 border-t-4 pt-2">
-                Amount of {predictionOutcome2} tokens <span className="font-bold">held by prediction market</span>
+                Amount of {noOutcome} tokens <span className="font-bold">held by prediction market</span>
               </h3>
               <div className="stat-value text-lg">
-                {Number(formatEther(BigInt(token2Reserve ?? 0))).toFixed(2)} tokens
+                {Number(formatEther(BigInt(noTokenReserve ?? 0))).toFixed(2)} tokens
               </div>
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
-                {Number(formatEther(BigInt(((token2Reserve ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {predictionOutcome2})
+                {Number(formatEther(BigInt(((noTokenReserve ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
+                ETH if Oracle reports {noOutcome})
               </h3>
               <h3 className="text-lg mb-2 border-t-4 pt-2">
-                Amount of {predictionOutcome2} <span className="font-bold">tokens sold</span>
+                Amount of {noOutcome} <span className="font-bold">tokens sold</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(noTokenSold))).toFixed(2)} tokens</div>
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt((BigInt(noTokenSold) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {predictionOutcome2})
+                ETH if Oracle reports {noOutcome})
               </h3>
             </div>
           </div>
@@ -199,7 +194,7 @@ export function PredictionMarketInfoLP() {
               {Number(
                 formatEther(
                   BigInt(
-                    ((winningToken === optionToken1 ? token1Reserve : token2Reserve) * tokenValue) / BigInt(10 ** 18),
+                    ((winningToken === yesToken ? yesTokenReserve : noTokenReserve) * tokenValue) / BigInt(10 ** 18),
                   ),
                 ),
               ).toFixed(4)}{" "}
@@ -210,8 +205,7 @@ export function PredictionMarketInfoLP() {
               {Number(
                 formatEther(
                   BigInt(
-                    ((BigInt(totalSupply ?? 0) -
-                      BigInt(winningToken === optionToken1 ? token1Reserve : token2Reserve)) *
+                    ((BigInt(totalSupply ?? 0) - BigInt(winningToken === yesToken ? yesTokenReserve : noTokenReserve)) *
                       tokenValue) /
                       BigInt(10 ** 18),
                   ),
@@ -220,8 +214,7 @@ export function PredictionMarketInfoLP() {
               ETH
             </h3>
             <h3 className="text-sm mb-2">
-              &quot;{winningToken === optionToken1 ? predictionOutcome2 : predictionOutcome1}&quot; tokens have no value
-              anymore
+              &quot;{winningToken === yesToken ? noOutcome : yesOutcome}&quot; tokens have no value anymore
             </h3>
           </div>
         )}

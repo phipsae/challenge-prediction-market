@@ -7,10 +7,15 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     PredictionMarket: {
-      address: "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9",
+      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
       abi: [
         {
           inputs: [
+            {
+              internalType: "address",
+              name: "_liquidityProvider",
+              type: "address",
+            },
             {
               internalType: "address",
               name: "_oracle",
@@ -190,100 +195,6 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
-              name: "provider",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "ethAmount",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "tokensAmount",
-              type: "uint256",
-            },
-          ],
-          name: "LiquidityAdded",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "provider",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "ethAmount",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "tokensAmount",
-              type: "uint256",
-            },
-          ],
-          name: "LiquidityRemoved",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "oracle",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "enum PredictionMarket.Option",
-              name: "winningOption",
-              type: "uint8",
-            },
-            {
-              indexed: false,
-              internalType: "address",
-              name: "winningToken",
-              type: "address",
-            },
-          ],
-          name: "MarketReported",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "resolver",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "totalEthToSend",
-              type: "uint256",
-            },
-          ],
-          name: "MarketResolved",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
               name: "previousOwner",
               type: "address",
             },
@@ -295,93 +206,6 @@ const deployedContracts = {
             },
           ],
           name: "OwnershipTransferred",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "buyer",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "enum PredictionMarket.Option",
-              name: "option",
-              type: "uint8",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "ethAmount",
-              type: "uint256",
-            },
-          ],
-          name: "TokensPurchased",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "seller",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "enum PredictionMarket.Option",
-              name: "option",
-              type: "uint8",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "ethAmount",
-              type: "uint256",
-            },
-          ],
-          name: "TokensSold",
-          type: "event",
-        },
-        {
-          anonymous: false,
-          inputs: [
-            {
-              indexed: true,
-              internalType: "address",
-              name: "redeemer",
-              type: "address",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "amount",
-              type: "uint256",
-            },
-            {
-              indexed: false,
-              internalType: "uint256",
-              name: "ethAmount",
-              type: "uint256",
-            },
-          ],
-          name: "WinningTokensRedeemed",
           type: "event",
         },
         {
@@ -632,7 +456,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "s_initialProbability",
+          name: "s_initialTokenValue",
           outputs: [
             {
               internalType: "uint256",
@@ -645,7 +469,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "s_initialTokenValue",
+          name: "s_initialYesProbability",
           outputs: [
             {
               internalType: "uint256",

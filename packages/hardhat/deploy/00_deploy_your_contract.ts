@@ -25,13 +25,15 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const question = "Will the green car win the race?";
   const initialLiquidity = ethers.parseEther("1");
   const initialTokenValue = ethers.parseEther("0.01");
-  const initialProbability = 50;
+  const initialProbability = 60;
   const percentageLocked = 10;
+  const liquidityProvider = "0xca4150f26B2B3e933b9432Ae57DE6354860E180E";
+  const oracle = "0xca4150f26B2B3e933b9432Ae57DE6354860E180E";
 
   await deploy("PredictionMarket", {
     from: deployer,
     // Contract constructor arguments
-    args: [deployer, question, initialTokenValue, initialProbability, percentageLocked],
+    args: [liquidityProvider, oracle, question, initialTokenValue, initialProbability, percentageLocked],
     log: true,
     value: initialLiquidity.toString(),
     // autoMine: can be passed to the deploy function to make the deployment process faster on local networks by
@@ -41,7 +43,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
 
   // Get the deployed contract to interact with it after deploying.
   const predictionMarket = await hre.ethers.getContract<Contract>("PredictionMarket", deployer);
-  console.log("👋 Initial greeting:", await predictionMarket.s_question());
+  console.log("PredictionMarket deployed to:", await predictionMarket.getAddress());
 };
 
 export default deployYourContract;

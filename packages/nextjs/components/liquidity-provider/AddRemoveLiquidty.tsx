@@ -15,27 +15,25 @@ export function AddRemoveLiquidity() {
     contractName: "PredictionMarket",
   });
 
-  const { data: prediction, isLoading } = useScaffoldReadContract({
+  const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
     functionName: "prediction",
   });
 
-  if (isLoading)
-    return (
-      <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
-        <h2 className="text-lg font-semibold text-center">Loading prediction market...</h2>
-      </div>
-    );
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
+  });
 
-  if (!prediction)
+  if (!owner)
     return (
       <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
         <h2 className="text-lg font-semibold text-center">No prediction market found</h2>
       </div>
     );
 
-  const tokenvalue = prediction[4];
-  const isReported = prediction[7];
+  const tokenValue = prediction?.[4] ?? BigInt(0);
+  const isReported = prediction?.[7] ?? false;
 
   if (isReported)
     return (
@@ -44,7 +42,7 @@ export function AddRemoveLiquidity() {
       </>
     );
 
-  const isLiquidityProvider = address === prediction[13];
+  const isLiquidityProvider = address === prediction?.[13];
   return (
     <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
       {!isLiquidityProvider && (
@@ -62,7 +60,7 @@ export function AddRemoveLiquidity() {
               onChange={e => setInputBuyAmount(Number(e))}
               disabled={!isLiquidityProvider || isReported}
             />
-            {inputBuyAmount > 0 && `Adding ${(inputBuyAmount / Number(tokenvalue)) * 10 ** 18} Yes and No tokens`}
+            {inputBuyAmount > 0 && `Adding ${(inputBuyAmount / Number(tokenValue)) * 10 ** 18} Yes and No tokens`}
             <button
               className={`btn btn-sm w-full btn-primary text-white`}
               disabled={!isLiquidityProvider || isReported}
@@ -94,7 +92,7 @@ export function AddRemoveLiquidity() {
               disabled={!isLiquidityProvider || isReported}
             />
             {inputSellAmount > 0 &&
-              `Removing ${(inputSellAmount / Number(tokenvalue)) * 10 ** 18} 30 Yes and 30 No token`}
+              `Removing ${(inputSellAmount / Number(tokenValue)) * 10 ** 18} 30 Yes and 30 No token`}
             <div className="flex gap-2">
               <button
                 disabled={!isLiquidityProvider || isReported}

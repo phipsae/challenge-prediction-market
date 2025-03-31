@@ -4,20 +4,17 @@ import { ProbabilityDisplay } from "./ProbabilityDisplay";
 import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 export function PredictionMarketInfo() {
-  const { data: prediction, isLoading } = useScaffoldReadContract({
+  const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
     functionName: "prediction",
   });
 
-  if (isLoading)
-    return (
-      <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
-        <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
-        <p className="text-base-content">Loading prediction market...</p>
-      </div>
-    );
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
+  });
 
-  if (!prediction)
+  if (!owner)
     return (
       <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
@@ -25,12 +22,12 @@ export function PredictionMarketInfo() {
       </div>
     );
 
-  const question = prediction[0];
-  const predictionOutcome1 = prediction[1];
-  const predictionOutcome2 = prediction[2];
-  const isReported = prediction[7];
-  const optionToken1 = prediction[8];
-  const winningToken = prediction[10];
+  const question = prediction?.[0] ?? "N/A";
+  const predictionOutcome1 = prediction?.[1] ?? "Yes";
+  const predictionOutcome2 = prediction?.[2] ?? "No";
+  const isReported = prediction?.[7] ?? false;
+  const optionToken1 = prediction?.[8] ?? "0x0000000000000000000000000000000000000000";
+  const winningToken = prediction?.[10] ?? "0x0000000000000000000000000000000000000000";
   const winningOption = winningToken === optionToken1 ? predictionOutcome1 : predictionOutcome2;
 
   return (
@@ -41,13 +38,13 @@ export function PredictionMarketInfo() {
             <div>
               <p className="text-base-content text-xl font-bold">{question}</p>
               <div className={`badge ${isReported ? "badge-success" : "badge-warning"}`}>
-                {isReported ? "Reported" : "In Progress"}
+                {isReported ? "Reported" : "Not Reported"}
               </div>
             </div>
             <ProbabilityDisplay
-              token1Reserve={BigInt(prediction[5])}
-              token2Reserve={BigInt(prediction[6])}
-              tokenAddress={prediction[8]}
+              token1Reserve={BigInt(prediction?.[5] ?? 0)}
+              token2Reserve={BigInt(prediction?.[6] ?? 0)}
+              tokenAddress={optionToken1}
               label="Chance"
               isReported={isReported}
               winningOption={winningOption}

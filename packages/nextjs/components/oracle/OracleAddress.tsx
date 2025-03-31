@@ -9,7 +9,12 @@ export function OracleAddress() {
     functionName: "prediction",
   });
 
-  if (!prediction)
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
+  });
+
+  if (!owner)
     return (
       <div className="flex flex-col bg-base-100 p-4 rounded-xl">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
@@ -17,10 +22,12 @@ export function OracleAddress() {
       </div>
     );
 
+  const oracle = prediction?.[3] ?? "0x0000000000000000000000000000000000000000";
+
   return (
     <div className="flex flex-col bg-base-100 p-4 rounded-xl">
       <h2 className="text-2xl font-bold text-center">Oracle </h2>
-      <Address address={prediction[3]} />
+      <Address address={oracle} />
     </div>
   );
 }

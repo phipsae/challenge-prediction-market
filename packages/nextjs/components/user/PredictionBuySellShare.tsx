@@ -21,9 +21,14 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
     contractName: "PredictionMarket",
   });
 
-  const { data: prediction, isLoading } = useScaffoldReadContract({
+  const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
     functionName: "prediction",
+  });
+
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
   });
 
   const { data: totalPriceInEth } = useScaffoldReadContract({
@@ -56,31 +61,24 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
     functionName: "totalSupply",
   });
 
-  if (isLoading)
-    return (
-      <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
-        <h2 className="text-lg font-semibold text-center">Loading prediction market...</h2>
-      </div>
-    );
-
-  if (!prediction)
+  if (!owner)
     return (
       <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
         <h2 className="text-lg font-semibold text-center">No prediction market found</h2>
       </div>
     );
 
-  const token1Address = prediction[8 + optionIndex];
-  const option = prediction[1 + optionIndex];
-  const token1Reserve = prediction[5 + optionIndex] as bigint;
-  const token2Reserve = prediction[6 - optionIndex] as bigint;
-  const ethCollateral = prediction[11];
-  const isReported = prediction[7];
-  const predictionOutcome1 = prediction[1];
-  const predictionOutcome2 = prediction[2];
-  const optionToken1 = prediction[8];
-  const winningToken = prediction[10];
-  const winningOption = winningToken === optionToken1 ? predictionOutcome1 : predictionOutcome2;
+  const tokenAddress = prediction?.[8 + optionIndex] ?? "0x0000000000000000000000000000000000000000";
+  const option = prediction?.[1 + optionIndex] ?? "Yes";
+  const yesTokenReserve = prediction?.[5 + optionIndex] as bigint;
+  const noTokenReserve = prediction?.[6 - optionIndex] as bigint;
+  const ethCollateral = prediction?.[11] ?? 0n;
+  const isReported = prediction?.[7] ?? false;
+  const yesOutcome = prediction?.[1] ?? "Yes";
+  const noOutcome = prediction?.[2] ?? "No";
+  const optionToken1 = prediction?.[8] ?? "0x0000000000000000000000000000000000000000";
+  const winningToken = prediction?.[10] ?? "0x0000000000000000000000000000000000000000";
+  const winningOption = winningToken === optionToken1 ? yesOutcome : noOutcome;
 
   const etherToReceive = totalSupply
     ? (parseEther((inputBuyAmount || BigInt(0)).toString()) * ethCollateral) / totalSupply
@@ -89,18 +87,18 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
   return (
     <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
-      <div className="flex justify-center">Tokens available to buy: {formatEther(token1Reserve ?? BigInt(0))}</div>
+      <div className="flex justify-center">Tokens available to buy: {formatEther(yesTokenReserve ?? BigInt(0))}</div>
 
       <ProbabilityDisplay
-        token1Reserve={token1Reserve ?? BigInt(0)}
-        token2Reserve={token2Reserve ?? BigInt(0)}
-        tokenAddress={token1Address as string}
+        token1Reserve={yesTokenReserve ?? BigInt(0)}
+        token2Reserve={noTokenReserve ?? BigInt(0)}
+        tokenAddress={tokenAddress as string}
         isReported={isReported}
         winningOption={winningOption}
       />
 
       <div className="flex justify-center">
-        <TokenBalance tokenAddress={token1Address as string} option={option as string} redeem={false} />
+        <TokenBalance tokenAddress={tokenAddress as string} option={option as string} redeem={false} />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -120,9 +118,9 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
                 <div className="text-sm"></div>
 
                 <ProbabilityDisplay
-                  token1Reserve={(token1Reserve ?? BigInt(0)) - parseEther((inputBuyAmount || BigInt(0)).toString())}
-                  token2Reserve={token2Reserve ?? BigInt(0)}
-                  tokenAddress={token1Address as string}
+                  token1Reserve={(yesTokenReserve ?? BigInt(0)) - parseEther((inputBuyAmount || BigInt(0)).toString())}
+                  token2Reserve={noTokenReserve ?? BigInt(0)}
+                  tokenAddress={tokenAddress as string}
                   label="New Probability"
                   isReported={isReported}
                   winningOption={winningOption}
@@ -172,9 +170,9 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
               <>
                 <div className="text-sm">ETH to receive: {formatEther(sellTotalPriceInEth)}</div>
                 <ProbabilityDisplay
-                  token1Reserve={(token1Reserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())}
-                  token2Reserve={token2Reserve ?? BigInt(0)}
-                  tokenAddress={token1Address as string}
+                  token1Reserve={(yesTokenReserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())}
+                  token2Reserve={noTokenReserve ?? BigInt(0)}
+                  tokenAddress={tokenAddress as string}
                   label="New Probability"
                   isReported={isReported}
                   winningOption={winningOption}
@@ -184,7 +182,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
             <div className="flex gap-2">
               <GiveAllowance
-                tokenAddress={token1Address as string}
+                tokenAddress={tokenAddress as string}
                 spenderAddress={contractAddress ?? ""}
                 amount={inputSellAmount.toString()}
                 showInput={false}

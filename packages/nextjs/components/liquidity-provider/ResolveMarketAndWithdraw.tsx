@@ -4,9 +4,14 @@ import { LPFinalTokenBalance } from "~~/components/liquidity-provider/LPFinalTok
 import { useScaffoldContract, useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 
 export function ResolveMarketAndWithdraw() {
-  const { data: prediction, isLoading } = useScaffoldReadContract({
+  const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
     functionName: "prediction",
+  });
+
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
   });
 
   const { data: predictionMarketContract } = useScaffoldContract({
@@ -17,15 +22,7 @@ export function ResolveMarketAndWithdraw() {
     contractName: "PredictionMarket",
   });
 
-  if (isLoading)
-    return (
-      <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
-        <h2 className="text-2xl font-bold text-center mb-4">Resolve Market and Withdraw ETH</h2>
-        <p className="text-base-content">Loading prediction market...</p>
-      </div>
-    );
-
-  if (!prediction || !predictionMarketContract)
+  if (!owner)
     return (
       <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
         <h2 className="text-2xl font-bold text-center mb-4">Resolve Market and Withdraw ETH</h2>
@@ -33,14 +30,14 @@ export function ResolveMarketAndWithdraw() {
       </div>
     );
 
-  const tokenValue = prediction[4];
-  const predictionOutcome1 = prediction[1];
-  const predictionOutcome2 = prediction[2];
-  const isReported = prediction[7];
-  const optionToken1 = prediction[8];
-  const winningToken = prediction[10];
-  const lpRevenue = prediction[12];
-  const winningOption = winningToken === optionToken1 ? predictionOutcome1 : predictionOutcome2;
+  const tokenValue = prediction?.[4] ?? BigInt(0);
+  const yesOutcome = prediction?.[1] ?? "Yes";
+  const noOutcome = prediction?.[2] ?? "No";
+  const isReported = prediction?.[7] ?? false;
+  const yesToken = prediction?.[8] ?? "0x0000000000000000000000000000000000000000";
+  const winningToken = prediction?.[10] ?? "0x0000000000000000000000000000000000000000";
+  const lpRevenue = prediction?.[12] ?? BigInt(0);
+  const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
   if (!isReported) return <></>;
 
@@ -61,7 +58,7 @@ export function ResolveMarketAndWithdraw() {
         <LPFinalTokenBalance
           tokenAddress={winningToken as string}
           winningOption={winningOption}
-          address={predictionMarketContract.address as string}
+          address={predictionMarketContract?.address as string}
           tokenValue={tokenValue}
           lpRevenue={lpRevenue}
         />

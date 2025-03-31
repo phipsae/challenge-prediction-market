@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect } from "react";
+import { erc20Abi } from "../constants";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatEther } from "viem";
 import { useBlockNumber, useReadContract } from "wagmi";
-import { erc20Abi } from "~~/components/constants";
 import { useSelectedNetwork } from "~~/hooks/scaffold-eth";
 
 export function LPFinalTokenBalance({

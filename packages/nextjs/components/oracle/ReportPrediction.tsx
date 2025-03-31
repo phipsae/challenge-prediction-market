@@ -17,6 +17,11 @@ export function ReportPrediction() {
     functionName: "prediction",
   });
 
+  const { data: owner } = useScaffoldReadContract({
+    contractName: "PredictionMarket",
+    functionName: "owner",
+  });
+
   const handleReport = async () => {
     try {
       await writeContractAsync({
@@ -28,9 +33,12 @@ export function ReportPrediction() {
     }
   };
 
-  if (!prediction) return null;
+  if (!owner) return null;
 
-  const isOracle = address === prediction[3];
+  const yesOutcome = prediction?.[1] ?? "Yes";
+  const noOutcome = prediction?.[2] ?? "No";
+
+  const isOracle = address === prediction?.[3];
   return (
     <div className="p-6 bg-base-100 rounded-xl shadow-lg mt-5">
       <h2 className="text-2xl font-bold text-center mb-4">Report Prediction Outcome</h2>
@@ -42,8 +50,8 @@ export function ReportPrediction() {
           onChange={e => setSelectedOutcome(Number(e.target.value))}
           disabled={!isOracle}
         >
-          <option value={0}>{prediction[1]}</option>
-          <option value={1}>{prediction[2]}</option>
+          <option value={0}>{yesOutcome}</option>
+          <option value={1}>{noOutcome}</option>
         </select>
         <button className="btn btn-primary" onClick={handleReport} disabled={!isOracle}>
           Report Outcome
