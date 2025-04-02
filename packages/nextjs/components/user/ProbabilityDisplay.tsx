@@ -1,5 +1,4 @@
 import { useReadContract } from "wagmi";
-import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
 export function ProbabilityDisplay({
   token1Reserve,

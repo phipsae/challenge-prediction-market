@@ -63,7 +63,7 @@ contract PredictionMarket is Ownable {
     // event TokensSold(address indexed seller, Option option, uint256 amount, uint256 ethAmount);
     // event WinningTokensRedeemed(address indexed redeemer, uint256 amount, uint256 ethAmount);
     event MarketReported(address indexed oracle, Outcome winningOutcome, address winningToken);
-    // event MarketResolved(address indexed resolver, uint256 totalEthToSend);
+    event MarketResolved(address indexed resolver, uint256 totalEthToSend);
     event LiquidityAdded(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
     event LiquidityRemoved(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
 
@@ -74,13 +74,6 @@ contract PredictionMarket is Ownable {
     modifier predictionNotReported() {
         if (s_isReported) {
             revert PredictionMarket__PredictionAlreadyResolved();
-        }
-        _;
-    }
-
-    modifier onlyValidOutcome(Outcome _outcome) {
-        if (_outcome != Outcome.YES && _outcome != Outcome.NO) {
-            revert PredictionMarket__InvalidOutcome();
         }
         _;
     }
@@ -177,7 +170,8 @@ contract PredictionMarket is Ownable {
      * @notice Report the winning outcome for the prediction
      * @param _winningOutcome The winning outcome (YES or NO)
      */
-    function report(Outcome _winningOutcome) external predictionNotReported onlyValidOutcome(_winningOutcome) {
+    function report(Outcome _winningOutcome) external predictionNotReported {
+        //// CHECKPOINT 5 ////
         if (msg.sender != s_oracle) {
             revert PredictionMarket__OnlyOracleCanReport();
         }
@@ -192,35 +186,35 @@ contract PredictionMarket is Ownable {
      * @return ethRedeemed The amount of ETH redeemed
      */
     function resolveMarketAndWithdraw() external onlyOwner returns (uint256 ethRedeemed) {
-        // if (!s_isReported) {
-        //     revert PredictionMarket__PredictionNotResolved();
-        // }
+        if (!s_isReported) {
+            revert PredictionMarket__PredictionNotResolved();
+        }
 
-        // uint256 contractWinningTokens = s_winningToken.balanceOf(address(this));
-        // if (contractWinningTokens > 0) {
-        //     ethRedeemed = (contractWinningTokens * s_initialTokenValue) / PRECISION;
+        uint256 contractWinningTokens = s_winningToken.balanceOf(address(this));
+        if (contractWinningTokens > 0) {
+            ethRedeemed = (contractWinningTokens * s_initialTokenValue) / PRECISION;
 
-        //     if (ethRedeemed > s_ethCollateral) {
-        //         ethRedeemed = s_ethCollateral;
-        //     }
+            if (ethRedeemed > s_ethCollateral) {
+                ethRedeemed = s_ethCollateral;
+            }
 
-        //     s_ethCollateral -= ethRedeemed;
-        // }
+            s_ethCollateral -= ethRedeemed;
+        }
 
-        // uint256 totalEthToSend = ethRedeemed + s_lpTradingRevenue;
+        uint256 totalEthToSend = ethRedeemed + s_lpTradingRevenue;
 
-        // s_lpTradingRevenue = 0;
+        s_lpTradingRevenue = 0;
 
-        // s_winningToken.burn(address(this), contractWinningTokens);
+        s_winningToken.burn(address(this), contractWinningTokens);
 
-        // (bool success,) = msg.sender.call{value: totalEthToSend}("");
-        // if (!success) {
-        //     revert PredictionMarket__ETHTransferFailed();
-        // }
+        (bool success,) = msg.sender.call{value: totalEthToSend}("");
+        if (!success) {
+            revert PredictionMarket__ETHTransferFailed();
+        }
 
-        // emit MarketResolved(msg.sender, totalEthToSend);
+        emit MarketResolved(msg.sender, totalEthToSend);
 
-        // return ethRedeemed;
+        return ethRedeemed;
     }
 
     /**
@@ -228,12 +222,7 @@ contract PredictionMarket is Ownable {
      * @param _outcome The possible outcome (YES or NO) to buy tokens for
      * @param _amountTokenToBuy Amount of tokens to purchase
      */
-    function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy)
-        external
-        payable
-        predictionNotReported
-        onlyValidOutcome(_outcome)
-    {
+    function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy) external payable predictionNotReported {
         // if (_amountTokenToBuy == 0) {
         //     revert PredictionMarket__AmountMustBeGreaterThanZero();
         // }
@@ -268,11 +257,7 @@ contract PredictionMarket is Ownable {
      * @param _outcome The possible outcome (YES or NO) to sell tokens for
      * @param _tradingAmount The amount of tokens to sell
      */
-    function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount)
-        external
-        predictionNotReported
-        onlyValidOutcome(_outcome)
-    {
+    function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount) external predictionNotReported {
         // if (_tradingAmount == 0) {
         //     revert PredictionMarket__AmountMustBeGreaterThanZero();
         // }
@@ -374,52 +359,49 @@ contract PredictionMarket is Ownable {
         view
         returns (uint256)
     {
-        // (uint256 currentTokenReserve, uint256 currentOtherTokenReserve) = _getCurrentReserves(_option);
+        (uint256 currentTokenReserve, uint256 currentOtherTokenReserve) = _getCurrentReserves(_outcome);
 
-        // /// Ensure sufficient liquidity when buying
-        // if (!_isSelling) {
-        //     if (currentTokenReserve < _tradingAmount) {
-        //         revert PredictionMarket__InsufficientLiquidity();
-        //     }
-        // }
+        /// Ensure sufficient liquidity when buying
+        if (!_isSelling) {
+            if (currentTokenReserve < _tradingAmount) {
+                revert PredictionMarket__InsufficientLiquidity();
+            }
+        }
 
-        // uint256 totalTokenSupply = s_yesToken.totalSupply();
+        uint256 totalTokenSupply = s_yesToken.totalSupply();
 
-        // /// Before trade
-        // uint256 currentTokenSoldBefore = totalTokenSupply - currentTokenReserve;
-        // uint256 currentOtherTokenSold = totalTokenSupply - currentOtherTokenReserve;
+        /// Before trade
+        uint256 currentTokenSoldBefore = totalTokenSupply - currentTokenReserve;
+        uint256 currentOtherTokenSold = totalTokenSupply - currentOtherTokenReserve;
 
-        // uint256 totalTokensSoldBefore = currentTokenSoldBefore + currentOtherTokenSold;
-        // uint256 probabilityBefore = _calculateProbability(currentTokenSoldBefore, totalTokensSoldBefore);
+        uint256 totalTokensSoldBefore = currentTokenSoldBefore + currentOtherTokenSold;
+        uint256 probabilityBefore = _calculateProbability(currentTokenSoldBefore, totalTokensSoldBefore);
 
-        // /// After trade
-        // uint256 currentTokenReserveAfter =
-        //     _isSelling ? currentTokenReserve + _tradingAmount : currentTokenReserve - _tradingAmount;
-        // uint256 currentTokenSoldAfter = totalTokenSupply - currentTokenReserveAfter;
+        /// After trade
+        uint256 currentTokenReserveAfter =
+            _isSelling ? currentTokenReserve + _tradingAmount : currentTokenReserve - _tradingAmount;
+        uint256 currentTokenSoldAfter = totalTokenSupply - currentTokenReserveAfter;
 
-        // uint256 totalTokensSoldAfter =
-        //     _isSelling ? totalTokensSoldBefore - _tradingAmount : totalTokensSoldBefore + _tradingAmount;
+        uint256 totalTokensSoldAfter =
+            _isSelling ? totalTokensSoldBefore - _tradingAmount : totalTokensSoldBefore + _tradingAmount;
 
-        // uint256 probabilityAfter = _calculateProbability(currentTokenSoldAfter, totalTokensSoldAfter);
+        uint256 probabilityAfter = _calculateProbability(currentTokenSoldAfter, totalTokensSoldAfter);
 
-        // /// Compute final price
-        // uint256 probabilityAvg = (probabilityBefore + probabilityAfter) / 2;
-        // return (s_initialTokenValue * probabilityAvg * _tradingAmount) / (PRECISION * PRECISION);
+        /// Compute final price
+        uint256 probabilityAvg = (probabilityBefore + probabilityAfter) / 2;
+        return (s_initialTokenValue * probabilityAvg * _tradingAmount) / (PRECISION * PRECISION);
     }
 
     function _getCurrentReserves(Outcome _outcome) private view returns (uint256, uint256) {
-        // if (_outcome == Outcome.YES) {
-        //     return (s_yesToken.balanceOf(address(this)), s_noToken.balanceOf(address(this)));
-        // } else {
-        //     return (s_noToken.balanceOf(address(this)), s_yesToken.balanceOf(address(this)));
-        // }
+        if (_outcome == Outcome.YES) {
+            return (s_yesToken.balanceOf(address(this)), s_noToken.balanceOf(address(this)));
+        } else {
+            return (s_noToken.balanceOf(address(this)), s_yesToken.balanceOf(address(this)));
+        }
     }
 
     function _calculateProbability(uint256 tokensSold, uint256 totalSold) private pure returns (uint256) {
-        // if (totalSold == 0) {
-        //     return 50;
-        // }
-        // return (tokensSold * PRECISION) / totalSold;
+        return (tokensSold * PRECISION) / totalSold;
     }
 
     /////////////////////////

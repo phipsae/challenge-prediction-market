@@ -315,5 +315,320 @@ describe("PredictionMarket", function () {
         predictionMarket.connect(owner).addLiquidity({ value: ethers.parseEther("1") }),
       ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyResolved");
     });
+
+    it("Should revert when trying to remove liquidity after prediction is reported", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // First report the prediction
+      await predictionMarket.connect(oracle).report(0); // Report YES as winning option
+
+      // Try to remove liquidity after prediction is reported
+      await expect(
+        predictionMarket.connect(owner).removeLiquidity(ethers.parseEther("1")),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyResolved");
+    });
+
+    it("Should revert when trying to report after prediction is reported", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // First report the prediction
+      await predictionMarket.connect(oracle).report(0); // Report YES as winning option
+
+      // Try to report again
+      await expect(predictionMarket.connect(oracle).report(0)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__PredictionAlreadyResolved",
+      );
+    });
+
+    it("Should revert when trying to report when not called by the s_oracle", async function () {
+      const [owner, oracle, nonOracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Try to report from non-oracle account
+      await expect(predictionMarket.connect(nonOracle).report(0)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__OnlyOracleCanReport",
+      );
+    });
+
+    it("Should correctly set winning token and isReported flag when reporting", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token addresses before reporting
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+
+      // Initially isReported should be false
+      expect(await predictionMarket.s_isReported()).to.equal(false);
+
+      // Report YES outcome
+      await predictionMarket.connect(oracle).report(0);
+
+      // Verify isReported is set to true
+      expect(await predictionMarket.s_isReported()).to.equal(true);
+
+      // Verify winning token is set to YES token
+      expect(await predictionMarket.s_winningToken()).to.equal(yesTokenAddress);
+
+      // Deploy a new instance for testing NO outcome
+      const predictionMarket2 = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question 2",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket2.waitForDeployment();
+
+      // Get token addresses for second instance
+      const noTokenAddress2 = await predictionMarket2.s_noToken();
+
+      // Initially isReported should be false
+      expect(await predictionMarket2.s_isReported()).to.equal(false);
+
+      // Report NO outcome
+      await predictionMarket2.connect(oracle).report(1);
+
+      // Verify isReported is set to true
+      expect(await predictionMarket2.s_isReported()).to.equal(true);
+
+      // Verify winning token is set to NO token
+      expect(await predictionMarket2.s_winningToken()).to.equal(noTokenAddress2);
+    });
+
+    it("Should emit correct MarketReported event when reporting", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token addresses before reporting
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+
+      // Report YES outcome and expect event
+      await expect(predictionMarket.connect(oracle).report(0))
+        .to.emit(predictionMarket, "MarketReported")
+        .withArgs(oracle.address, 0, yesTokenAddress); // 0 represents YES outcome
+
+      // Deploy a new instance for testing NO outcome
+      const predictionMarket2 = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question 2",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket2.waitForDeployment();
+
+      // Get token addresses for second instance
+      const noTokenAddress2 = await predictionMarket2.s_noToken();
+
+      // Report NO outcome and expect event
+      await expect(predictionMarket2.connect(oracle).report(1))
+        .to.emit(predictionMarket2, "MarketReported")
+        .withArgs(oracle.address, 1, noTokenAddress2); // 1 represents NO outcome
+    });
+  });
+
+  describe("Checkpoint6", function () {
+    it("Should revert when trying to resolve before prediction is reported", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Try to resolve before reporting
+      await expect(predictionMarket.connect(owner).resolveMarketAndWithdraw()).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__PredictionNotResolved",
+      );
+    });
+
+    it("Should correctly resolve market and withdraw ETH", async function () {
+      const [owner, oracle, nonOwner] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get initial balances
+      const initialOwnerBalance = await ethers.provider.getBalance(owner.address);
+      const initialContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+
+      // Report the prediction
+      await predictionMarket.connect(oracle).report(0); // Report YES as winning option
+
+      // Get winning token contract and initial values
+      const winningTokenAddress = await predictionMarket.s_winningToken();
+      const winningToken = await ethers.getContractAt("PredictionMarketToken", winningTokenAddress);
+      const initialWinningTokens = await winningToken.balanceOf(predictionMarket.getAddress());
+      const initialLpTradingRevenue = await predictionMarket.s_lpTradingRevenue();
+
+      // Calculate expected amounts before resolving
+      const expectedEthAmount = (initialWinningTokens * ethers.parseEther("1")) / BigInt(1e18);
+      const expectedTotalEthToSend = expectedEthAmount + initialLpTradingRevenue;
+
+      // Try to resolve from non-owner account (should fail)
+      await expect(predictionMarket.connect(nonOwner).resolveMarketAndWithdraw()).to.be.revertedWithCustomError(
+        predictionMarket,
+        "OwnableUnauthorizedAccount",
+      );
+
+      // Resolve market
+      const tx = await predictionMarket.connect(owner).resolveMarketAndWithdraw();
+      const receipt = await tx.wait();
+
+      // Get final balances
+      const finalOwnerBalance = await ethers.provider.getBalance(owner.address);
+      const finalContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+      const finalWinningTokens = await winningToken.balanceOf(predictionMarket.getAddress());
+
+      // Verify state changes
+      const expectedWinningTokens = BigInt(0);
+      expect(finalWinningTokens).to.equal(expectedWinningTokens); // All winning tokens should be burned
+
+      // Account for gas costs in balance calculations
+      const gasUsed = receipt?.gasUsed || BigInt(0);
+      const gasPrice = tx.gasPrice || BigInt(0);
+      const gasCost = gasUsed * gasPrice;
+      const actualEthReceived = finalOwnerBalance - initialOwnerBalance + gasCost;
+
+      // Verify the exact amount was sent
+      expect(actualEthReceived).to.equal(expectedTotalEthToSend);
+      expect(finalContractBalance).to.equal(initialContractBalance - expectedTotalEthToSend);
+
+      // Verify event emission
+      const marketResolvedEvent = receipt?.logs.find(log => {
+        try {
+          return predictionMarket.interface.parseLog({ topics: log.topics, data: log.data })?.name === "MarketResolved";
+        } catch {
+          return false;
+        }
+      });
+      const expectedEvent = marketResolvedEvent !== undefined;
+      expect(expectedEvent).to.equal(true);
+    });
+
+    it("Should send exact totalEthToSend amount to msg.sender", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get initial balances
+      const initialOwnerBalance = await ethers.provider.getBalance(owner.address);
+      const initialContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+      const initialLpTradingRevenue = await predictionMarket.s_lpTradingRevenue();
+
+      // Report the prediction
+      await predictionMarket.connect(oracle).report(0); // Report YES as winning option
+
+      // Get winning token contract and balance
+      const winningTokenAddress = await predictionMarket.s_winningToken();
+      const winningToken = await ethers.getContractAt("PredictionMarketToken", winningTokenAddress);
+      const contractWinningTokens = await winningToken.balanceOf(predictionMarket.getAddress());
+
+      // Calculate expected ETH amount from winning tokens
+      const ethFromWinningTokens = (contractWinningTokens * ethers.parseEther("1")) / BigInt(1e18);
+
+      // Calculate expected total ETH to send
+      const expectedTotalEthToSend = ethFromWinningTokens + initialLpTradingRevenue;
+
+      // Resolve market and get transaction
+      const tx = await predictionMarket.connect(owner).resolveMarketAndWithdraw();
+      const receipt = await tx.wait();
+
+      // Get final balances
+      const finalOwnerBalance = await ethers.provider.getBalance(owner.address);
+      const finalContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+
+      // Calculate actual ETH sent (accounting for gas costs)
+      const gasUsed = receipt?.gasUsed || BigInt(0);
+      const gasPrice = tx.gasPrice || BigInt(0);
+      const gasCost = gasUsed * gasPrice;
+      const actualEthReceived = finalOwnerBalance - initialOwnerBalance + gasCost;
+
+      // Verify the exact amount was sent
+      expect(actualEthReceived).to.equal(expectedTotalEthToSend);
+      expect(finalContractBalance).to.equal(initialContractBalance - expectedTotalEthToSend);
+    });
   });
 });
