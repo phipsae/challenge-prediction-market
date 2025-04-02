@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 contract PredictionMarketToken is ERC20 {
     error PredictionMarketToken__OnlyPredictionMarketCanMint();
     error PredictionMarketToken__OnlyPredictionMarketCanBurn();
-    error PredictionMarketToken__LiquidityProviderCantSell();
+    error PredictionMarketToken__LiquidityProviderCantTransfer();
 
     address public predictionMarket;
     address public liquidityProvider;
@@ -35,14 +35,14 @@ contract PredictionMarketToken is ERC20 {
 
     function transfer(address to, uint256 amount) public override returns (bool) {
         if (msg.sender == liquidityProvider) {
-            revert PredictionMarketToken__LiquidityProviderCantSell();
+            revert PredictionMarketToken__LiquidityProviderCantTransfer();
         }
         return super.transfer(to, amount);
     }
 
     function transferFrom(address from, address to, uint256 amount) public override returns (bool) {
         if (from == liquidityProvider) {
-            revert PredictionMarketToken__LiquidityProviderCantSell();
+            revert PredictionMarketToken__LiquidityProviderCantTransfer();
         }
         return super.transferFrom(from, to, amount);
     }

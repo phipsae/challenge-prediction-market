@@ -851,4 +851,338 @@ describe("PredictionMarket", function () {
       expect(noPriceAfter).to.be.gt(0);
     });
   });
+
+  describe("Checkpoint8", function () {
+    it("Should revert when trying to buy tokens with zero amount", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Try to buy tokens with zero amount
+      await expect(
+        predictionMarket.connect(owner).buyTokensWithETH(0, 0, { value: ethers.parseEther("1") }),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__AmountMustBeGreaterThanZero");
+    });
+
+    it("Should revert when trying to sell tokens with zero amount", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Try to sell tokens with zero amount
+      await expect(predictionMarket.connect(owner).sellTokensForEth(0, 0)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__AmountMustBeGreaterThanZero",
+      );
+    });
+
+    it("Should revert when trying to buy tokens with incorrect ETH amount", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // Calculate amount to buy
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+
+      // Try to buy with incorrect ETH amount
+      await expect(
+        predictionMarket.connect(owner).buyTokensWithETH(0, amountToBuy, { value: requiredEth + BigInt(1) }),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__MustSendExactETHAmount");
+    });
+
+    it("Should successfully buy tokens with ETH", async function () {
+      const [owner, oracle, buyer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // Calculate amount to buy
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+
+      // Get initial balances
+      const initialBuyerBalance = await yesToken.balanceOf(buyer.address);
+      const initialContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+
+      // Buy tokens
+      await predictionMarket.connect(buyer).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Get final balances
+      const finalBuyerBalance = await yesToken.balanceOf(buyer.address);
+      const finalContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+
+      // Verify token transfer
+      expect(finalBuyerBalance).to.equal(initialBuyerBalance + amountToBuy);
+      expect(finalContractBalance).to.equal(initialContractBalance + requiredEth);
+    });
+
+    it("Should successfully sell tokens for ETH", async function () {
+      const [owner, oracle, seller] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // First buy some tokens
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+      await predictionMarket.connect(seller).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Approve tokens for selling
+      await yesToken.connect(seller).approve(predictionMarket.getAddress(), amountToBuy);
+
+      // Get initial balances
+      const initialSellerBalance = await ethers.provider.getBalance(seller.address);
+      const initialContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+      const initialSellerTokens = await yesToken.balanceOf(seller.address);
+
+      // Calculate ETH to receive
+      const ethToReceive = await predictionMarket.getSellPriceInEth(0, amountToBuy);
+
+      // Sell tokens
+      const tx = await predictionMarket.connect(seller).sellTokensForEth(0, amountToBuy);
+      const receipt = await tx.wait();
+
+      // Get final balances
+      const finalSellerBalance = await ethers.provider.getBalance(seller.address);
+      const finalContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+      const finalSellerTokens = await yesToken.balanceOf(seller.address);
+
+      // Calculate actual ETH received (accounting for gas costs)
+      const gasUsed = receipt?.gasUsed || BigInt(0);
+      const gasPrice = tx.gasPrice || BigInt(0);
+      const gasCost = gasUsed * gasPrice;
+      const actualEthReceived = finalSellerBalance - initialSellerBalance + gasCost;
+
+      // Verify token transfer and ETH received
+      expect(finalSellerTokens).to.equal(initialSellerTokens - amountToBuy);
+      expect(actualEthReceived).to.equal(ethToReceive);
+      expect(finalContractBalance).to.equal(initialContractBalance - ethToReceive);
+    });
+
+    it("Should revert when trying to sell more tokens than owned", async function () {
+      const [owner, oracle, seller] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // First buy some tokens
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+      await predictionMarket.connect(seller).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Approve tokens for selling
+      await yesToken.connect(seller).approve(predictionMarket.getAddress(), amountToBuy);
+
+      // Try to sell more tokens than owned
+      const tooManyTokens = amountToBuy + BigInt(1);
+      await expect(predictionMarket.connect(seller).sellTokensForEth(0, tooManyTokens)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__InsufficientBalance",
+      );
+    });
+
+    it("Should revert when trying to sell tokens without approval", async function () {
+      const [owner, oracle, seller] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // First buy some tokens
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+      await predictionMarket.connect(seller).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Try to sell tokens without approval
+      await expect(predictionMarket.connect(seller).sellTokensForEth(0, amountToBuy)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__InsufficientAllowance",
+      );
+    });
+
+    it("Should emit correct events when buying and selling tokens", async function () {
+      const [owner, oracle, trader] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // Calculate amount to buy
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+
+      // Buy tokens and expect event
+      await expect(predictionMarket.connect(trader).buyTokensWithETH(0, amountToBuy, { value: requiredEth }))
+        .to.emit(predictionMarket, "TokensPurchased")
+        .withArgs(trader.address, 0, amountToBuy, requiredEth);
+
+      // Approve tokens for selling
+      await yesToken.connect(trader).approve(predictionMarket.getAddress(), amountToBuy);
+
+      // Calculate ETH to receive
+      const ethToReceive = await predictionMarket.getSellPriceInEth(0, amountToBuy);
+
+      // Sell tokens and expect event
+      await expect(predictionMarket.connect(trader).sellTokensForEth(0, amountToBuy))
+        .to.emit(predictionMarket, "TokensSold")
+        .withArgs(trader.address, 0, amountToBuy, ethToReceive);
+    });
+
+    it("Should revert when trying to buy tokens after prediction is reported", async function () {
+      const [owner, oracle, buyer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // Calculate amount to buy
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+
+      // Report the prediction
+      await predictionMarket.connect(oracle).report(0);
+
+      // Try to buy tokens after prediction is reported
+      await expect(
+        predictionMarket.connect(buyer).buyTokensWithETH(0, amountToBuy, { value: requiredEth }),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyResolved");
+    });
+
+    it("Should revert when trying to sell tokens after prediction is reported", async function () {
+      const [owner, oracle, seller] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // First buy some tokens
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+      await predictionMarket.connect(seller).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Approve tokens for selling
+      await yesToken.connect(seller).approve(predictionMarket.getAddress(), amountToBuy);
+
+      // Report the prediction
+      await predictionMarket.connect(oracle).report(0);
+
+      // Try to sell tokens after prediction is reported
+      await expect(predictionMarket.connect(seller).sellTokensForEth(0, amountToBuy)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__PredictionAlreadyResolved",
+      );
+    });
+  });
 });

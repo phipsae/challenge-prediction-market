@@ -25,8 +25,6 @@ contract PredictionMarket is Ownable {
     error PredictionMarket__InsufficientBalance(uint256 _tradingAmount, uint256 _userBalance);
     error PredictionMarket__InsufficientAllowance(uint256 _tradingAmount, uint256 _allowance);
     error PredictionMarket__InsufficientLiquidity();
-    error PredictionMarket__LiquidityProviderCantBuyTokens();
-    error PredictionMarket__LiquidityProviderCantSellTokens();
     error PredictionMarket__InvalidPercentageToLock();
     error PredictionMarket__InsufficientTokenBalance();
 
@@ -59,8 +57,8 @@ contract PredictionMarket is Ownable {
     /// Events //////
     /////////////////////////
 
-    // event TokensPurchased(address indexed buyer, Option option, u int256 amount, uint256 ethAmount);
-    // event TokensSold(address indexed seller, Option option, uint256 amount, uint256 ethAmount);
+    event TokensPurchased(address indexed buyer, Outcome outcome, uint256 amount, uint256 ethAmount);
+    event TokensSold(address indexed seller, Outcome outcome, uint256 amount, uint256 ethAmount);
     // event WinningTokensRedeemed(address indexed redeemer, uint256 amount, uint256 ethAmount);
     event MarketReported(address indexed oracle, Outcome winningOutcome, address winningToken);
     event MarketResolved(address indexed resolver, uint256 totalEthToSend);
@@ -91,7 +89,7 @@ contract PredictionMarket is Ownable {
         uint8 _percentageToLock
     ) payable Ownable(_liquidityProvider) {
         // /// CHECKPOINT 2 ////
-        if (msg.value <= 0) {
+        if (msg.value == 0) {
             revert PredictionMarket__MustProvideETHForInitialLiquidity();
         }
         if (_initialYesProbability >= 100 || _initialYesProbability == 0) {
@@ -223,33 +221,30 @@ contract PredictionMarket is Ownable {
      * @param _amountTokenToBuy Amount of tokens to purchase
      */
     function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy) external payable predictionNotReported {
-        // if (_amountTokenToBuy == 0) {
-        //     revert PredictionMarket__AmountMustBeGreaterThanZero();
-        // }
+        /// CHECKPOINT 8 ////
+        if (_amountTokenToBuy == 0) {
+            revert PredictionMarket__AmountMustBeGreaterThanZero();
+        }
 
-        // if (msg.sender == owner()) {
-        //     revert PredictionMarket__LiquidityProviderCantBuyTokens();
-        // }
+        uint256 ethNeeded = getBuyPriceInEth(_outcome, _amountTokenToBuy);
+        if (msg.value != ethNeeded) {
+            revert PredictionMarket__MustSendExactETHAmount();
+        }
 
-        // uint256 ethNeeded = getBuyPriceInEth(_option, _amountTokenToBuy);
-        // if (msg.value != ethNeeded) {
-        //     revert PredictionMarket__MustSendExactETHAmount();
-        // }
+        PredictionMarketToken optionToken = _outcome == Outcome.YES ? s_yesToken : s_noToken;
 
-        // PredictionMarketToken optionToken = _option == Option.YES ? s_yesToken : s_noToken;
+        if (_amountTokenToBuy > optionToken.balanceOf(address(this))) {
+            revert PredictionMarket__InsufficientTokenReserve();
+        }
 
-        // if (_amountTokenToBuy > optionToken.balanceOf(address(this))) {
-        //     revert PredictionMarket__InsufficientTokenReserve();
-        // }
+        s_lpTradingRevenue += msg.value;
 
-        // s_lpTradingRevenue += msg.value;
+        bool success = optionToken.transfer(msg.sender, _amountTokenToBuy);
+        if (!success) {
+            revert PredictionMarket__TokenTransferFailed();
+        }
 
-        // bool success = optionToken.transfer(msg.sender, _amountTokenToBuy);
-        // if (!success) {
-        //     revert PredictionMarket__TokenTransferFailed();
-        // }
-
-        // emit TokensPurchased(msg.sender, _option, _amountTokenToBuy, msg.value);
+        emit TokensPurchased(msg.sender, _outcome, _amountTokenToBuy, msg.value);
     }
 
     /**
@@ -258,39 +253,37 @@ contract PredictionMarket is Ownable {
      * @param _tradingAmount The amount of tokens to sell
      */
     function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount) external predictionNotReported {
-        // if (_tradingAmount == 0) {
-        //     revert PredictionMarket__AmountMustBeGreaterThanZero();
-        // }
+        /// CHECKPOINT 8 ////
+        if (_tradingAmount == 0) {
+            revert PredictionMarket__AmountMustBeGreaterThanZero();
+        }
 
-        // if (msg.sender == owner()) {
-        //     revert PredictionMarket__LiquidityProviderCantSellTokens();
-        // }
+        PredictionMarketToken optionToken = _outcome == Outcome.YES ? s_yesToken : s_noToken;
+        uint256 userBalance = optionToken.balanceOf(msg.sender);
+        if (userBalance < _tradingAmount) {
+            revert PredictionMarket__InsufficientBalance(_tradingAmount, userBalance);
+        }
 
-        // PredictionMarketToken optionToken = _option == Option.YES ? s_yesToken : s_noToken;
-        // uint256 userBalance = optionToken.balanceOf(msg.sender);
-        // if (userBalance < _tradingAmount) {
-        //     revert PredictionMarket__InsufficientBalance(_tradingAmount, userBalance);
-        // }
-        // uint256 ethToReceive = getSellPriceInEth(_option, _tradingAmount);
+        uint256 allowance = optionToken.allowance(msg.sender, address(this));
+        if (allowance < _tradingAmount) {
+            revert PredictionMarket__InsufficientAllowance(_tradingAmount, allowance);
+        }
 
-        // uint256 allowance = optionToken.allowance(msg.sender, address(this));
-        // if (allowance < _tradingAmount) {
-        //     revert PredictionMarket__InsufficientAllowance(_tradingAmount, allowance);
-        // }
+        uint256 ethToReceive = getSellPriceInEth(_outcome, _tradingAmount);
 
-        // s_lpTradingRevenue -= ethToReceive;
+        s_lpTradingRevenue -= ethToReceive;
 
-        // (bool sent,) = msg.sender.call{value: ethToReceive}("");
-        // if (!sent) {
-        //     revert PredictionMarket__ETHTransferFailed();
-        // }
+        (bool sent,) = msg.sender.call{value: ethToReceive}("");
+        if (!sent) {
+            revert PredictionMarket__ETHTransferFailed();
+        }
 
-        // bool success = optionToken.transferFrom(msg.sender, address(this), _tradingAmount);
-        // if (!success) {
-        //     revert PredictionMarket__TokenTransferFailed();
-        // }
+        bool success = optionToken.transferFrom(msg.sender, address(this), _tradingAmount);
+        if (!success) {
+            revert PredictionMarket__TokenTransferFailed();
+        }
 
-        // emit TokensSold(msg.sender, _option, _tradingAmount, ethToReceive);
+        emit TokensSold(msg.sender, _outcome, _tradingAmount, ethToReceive);
     }
 
     /**
