@@ -631,4 +631,224 @@ describe("PredictionMarket", function () {
       expect(finalContractBalance).to.equal(initialContractBalance - expectedTotalEthToSend);
     });
   });
+
+  describe("Checkpoint7", function () {
+    it("Should correctly calculate buy price in ETH", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contracts
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+      const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
+
+      // Calculate expected values
+      const PRECISION = BigInt(1e18);
+      const initialTokenAmount = (ethers.parseEther("10") * PRECISION) / ethers.parseEther("1");
+      const tradingAmount = initialTokenAmount / BigInt(10); // Buy 10% of total supply
+
+      // Get buy price for YES tokens
+      const buyPrice = await predictionMarket.getBuyPriceInEth(0, tradingAmount);
+
+      // Verify price calculation
+      const currentTokenSoldBefore = initialTokenAmount - (await yesToken.balanceOf(predictionMarket.getAddress()));
+      const currentOtherTokenSold = initialTokenAmount - (await noToken.balanceOf(predictionMarket.getAddress()));
+      const totalTokensSoldBefore = currentTokenSoldBefore + currentOtherTokenSold;
+      const probabilityBefore = (currentTokenSoldBefore * PRECISION) / totalTokensSoldBefore;
+
+      const currentTokenReserveAfter = (await yesToken.balanceOf(predictionMarket.getAddress())) - tradingAmount;
+      const currentTokenSoldAfter = initialTokenAmount - currentTokenReserveAfter;
+      const totalTokensSoldAfter = totalTokensSoldBefore + tradingAmount;
+      const probabilityAfter = (currentTokenSoldAfter * PRECISION) / totalTokensSoldAfter;
+
+      const probabilityAvg = (probabilityBefore + probabilityAfter) / BigInt(2);
+      const expectedPrice = (ethers.parseEther("1") * probabilityAvg * tradingAmount) / (PRECISION * PRECISION);
+
+      expect(buyPrice).to.equal(expectedPrice);
+    });
+
+    it("Should correctly calculate sell price in ETH", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contracts
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+      const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
+
+      // Calculate expected values
+      const PRECISION = BigInt(1e18);
+      const initialTokenAmount = (ethers.parseEther("10") * PRECISION) / ethers.parseEther("1");
+      const tradingAmount = initialTokenAmount / BigInt(10); // Sell 10% of total supply
+
+      // Get sell price for YES tokens
+      const sellPrice = await predictionMarket.getSellPriceInEth(0, tradingAmount);
+
+      // Verify price calculation
+      const currentTokenSoldBefore = initialTokenAmount - (await yesToken.balanceOf(predictionMarket.getAddress()));
+      const currentOtherTokenSold = initialTokenAmount - (await noToken.balanceOf(predictionMarket.getAddress()));
+      const totalTokensSoldBefore = currentTokenSoldBefore + currentOtherTokenSold;
+      const probabilityBefore = (currentTokenSoldBefore * PRECISION) / totalTokensSoldBefore;
+
+      const currentTokenReserveAfter = (await yesToken.balanceOf(predictionMarket.getAddress())) + tradingAmount;
+      const currentTokenSoldAfter = initialTokenAmount - currentTokenReserveAfter;
+      const totalTokensSoldAfter = totalTokensSoldBefore - tradingAmount;
+      const probabilityAfter = (currentTokenSoldAfter * PRECISION) / totalTokensSoldAfter;
+
+      const probabilityAvg = (probabilityBefore + probabilityAfter) / BigInt(2);
+      const expectedPrice = (ethers.parseEther("1") * probabilityAvg * tradingAmount) / (PRECISION * PRECISION);
+
+      expect(sellPrice).to.equal(expectedPrice);
+    });
+
+    it("Should revert when trying to buy more tokens than available in reserve", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // Try to buy more tokens than available in reserve
+      const reserveAmount = await yesToken.balanceOf(predictionMarket.getAddress());
+      const tooManyTokens = reserveAmount + BigInt(1);
+
+      await expect(predictionMarket.getBuyPriceInEth(0, tooManyTokens)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__InsufficientLiquidity",
+      );
+    });
+
+    it("Should correctly calculate probability for different token amounts", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contracts
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+      const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
+
+      // Calculate expected values
+      const PRECISION = BigInt(1e18);
+      const initialTokenAmount = (ethers.parseEther("10") * PRECISION) / ethers.parseEther("1");
+
+      // Test different scenarios
+      const scenarios = [
+        { liquidityToAdd: ethers.parseEther("10"), expectedProbability: PRECISION / BigInt(2) }, // 50% YES (initial state)
+        { liquidityToAdd: ethers.parseEther("20"), expectedProbability: PRECISION / BigInt(2) }, // Still 50% YES
+      ];
+
+      for (const scenario of scenarios) {
+        // Add liquidity to create token balances
+        await predictionMarket.connect(owner).addLiquidity({ value: scenario.liquidityToAdd });
+
+        // Calculate probability
+        const currentTokenSold = initialTokenAmount - (await yesToken.balanceOf(predictionMarket.getAddress()));
+        const totalTokensSold =
+          initialTokenAmount -
+          (await yesToken.balanceOf(predictionMarket.getAddress())) +
+          (initialTokenAmount - (await noToken.balanceOf(predictionMarket.getAddress())));
+        const probability = (currentTokenSold * PRECISION) / totalTokensSold;
+
+        expect(probability).to.equal(scenario.expectedProbability);
+      }
+    });
+
+    it("Should correctly get current reserves for both YES and NO outcomes", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contracts
+      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+      const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
+
+      // Get initial reserves
+      const initialYesReserve = await yesToken.balanceOf(predictionMarket.getAddress());
+      const initialNoReserve = await noToken.balanceOf(predictionMarket.getAddress());
+
+      // Test reserves through price calculation for YES outcome
+      const smallAmount = BigInt(1e15); // Small amount to minimize price impact
+      const yesPrice = await predictionMarket.getBuyPriceInEth(0, smallAmount);
+      expect(yesPrice).to.be.gt(0); // Price should be calculated correctly
+
+      // Test reserves through price calculation for NO outcome
+      const noPrice = await predictionMarket.getBuyPriceInEth(1, smallAmount);
+      expect(noPrice).to.be.gt(0); // Price should be calculated correctly
+
+      // Add some liquidity to change reserves
+      await predictionMarket.connect(owner).addLiquidity({ value: ethers.parseEther("5") });
+
+      // Get new reserves
+      const newYesReserve = await yesToken.balanceOf(predictionMarket.getAddress());
+      const newNoReserve = await noToken.balanceOf(predictionMarket.getAddress());
+
+      // Verify reserves increased equally
+      expect(newYesReserve).to.be.gt(initialYesReserve);
+      expect(newNoReserve).to.be.gt(initialNoReserve);
+      expect(newYesReserve).to.equal(newNoReserve);
+
+      // Test reserves again through price calculation
+      const yesPriceAfter = await predictionMarket.getBuyPriceInEth(0, smallAmount);
+      const noPriceAfter = await predictionMarket.getBuyPriceInEth(1, smallAmount);
+
+      // Prices should still be calculated correctly with new reserves
+      expect(yesPriceAfter).to.be.gt(0);
+      expect(noPriceAfter).to.be.gt(0);
+    });
+  });
 });

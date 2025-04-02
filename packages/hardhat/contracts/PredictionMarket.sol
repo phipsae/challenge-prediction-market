@@ -331,6 +331,7 @@ contract PredictionMarket is Ownable {
      * @return The total ETH price
      */
     function getBuyPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
+        /// CHECKPOINT 7 ////
         return _calculatePriceInEth(_outcome, _tradingAmount, false);
     }
 
@@ -341,6 +342,7 @@ contract PredictionMarket is Ownable {
      * @return The total ETH price
      */
     function getSellPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
+        /// CHECKPOINT 7 ////
         return _calculatePriceInEth(_outcome, _tradingAmount, true);
     }
 
@@ -359,6 +361,7 @@ contract PredictionMarket is Ownable {
         view
         returns (uint256)
     {
+        /// CHECKPOINT 7 ////
         (uint256 currentTokenReserve, uint256 currentOtherTokenReserve) = _getCurrentReserves(_outcome);
 
         /// Ensure sufficient liquidity when buying
@@ -393,6 +396,7 @@ contract PredictionMarket is Ownable {
     }
 
     function _getCurrentReserves(Outcome _outcome) private view returns (uint256, uint256) {
+        /// CHECKPOINT 7 ////
         if (_outcome == Outcome.YES) {
             return (s_yesToken.balanceOf(address(this)), s_noToken.balanceOf(address(this)));
         } else {
@@ -401,6 +405,7 @@ contract PredictionMarket is Ownable {
     }
 
     function _calculateProbability(uint256 tokensSold, uint256 totalSold) private pure returns (uint256) {
+        /// CHECKPOINT 7 ////
         return (tokensSold * PRECISION) / totalSold;
     }
 
