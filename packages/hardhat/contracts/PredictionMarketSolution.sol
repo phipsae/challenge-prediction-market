@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import {PredictionMarketTokenSolution} from "./PredictionMarketTokenSolution.sol";
+import {PredictionMarketToken} from "./PredictionMarketToken.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PredictionMarketSolution is Ownable {
@@ -10,7 +10,7 @@ contract PredictionMarketSolution is Ownable {
     /////////////////
 
     error PredictionMarket__MustProvideETHForInitialLiquidity();
-    error PredictionMarket__InvalidOption();
+    error PredictionMarket__InvalidOutcome();
     error PredictionMarket__InvalidProbability();
     error PredictionMarket__PredictionAlreadyResolved();
     error PredictionMarket__OnlyOracleCanReport();
@@ -25,8 +25,6 @@ contract PredictionMarketSolution is Ownable {
     error PredictionMarket__InsufficientBalance(uint256 _tradingAmount, uint256 _userBalance);
     error PredictionMarket__InsufficientAllowance(uint256 _tradingAmount, uint256 _allowance);
     error PredictionMarket__InsufficientLiquidity();
-    error PredictionMarket__LiquidityProviderCantBuyTokens();
-    error PredictionMarket__LiquidityProviderCantSellTokens();
     error PredictionMarket__InvalidPercentageToLock();
     error PredictionMarket__InsufficientTokenBalance();
 
@@ -34,7 +32,7 @@ contract PredictionMarketSolution is Ownable {
     /// State Variables //////
     //////////////////////////
 
-    enum Option {
+    enum Outcome {
         YES,
         NO
     }
@@ -43,25 +41,26 @@ contract PredictionMarketSolution is Ownable {
 
     address public immutable i_oracle;
     uint256 public immutable i_initialTokenValue;
-    PredictionMarketTokenSolution public immutable i_YesToken;
-    PredictionMarketTokenSolution public immutable i_NoToken;
     uint256 public immutable i_percentageLocked;
-    uint256 public immutable i_initialProbability;
+    uint256 public immutable i_initialYesProbability;
 
-    string public i_question;
-    PredictionMarketTokenSolution public s_winningToken;
+    string public s_question;
+    uint256 public s_ethCollateral;
+    uint256 public s_lpTradingRevenue;
+
+    PredictionMarketToken public s_yesToken;
+    PredictionMarketToken public s_noToken;
+
+    PredictionMarketToken public s_winningToken;
     bool public s_isReported;
-    uint256 public s_ethCollateral; // used to be ethReserve; eth pot which get's later distributed to winners
-    uint256 public s_lpTradingRevenue; // used to be lpReserve; fees which get's later distributed to liquidity providers, TODO: find better word
-
     /////////////////////////
     /// Events //////
     /////////////////////////
 
-    event TokensPurchased(address indexed buyer, Option option, uint256 amount, uint256 ethAmount);
-    event TokensSold(address indexed seller, Option option, uint256 amount, uint256 ethAmount);
+    event TokensPurchased(address indexed buyer, Outcome outcome, uint256 amount, uint256 ethAmount);
+    event TokensSold(address indexed seller, Outcome outcome, uint256 amount, uint256 ethAmount);
     event WinningTokensRedeemed(address indexed redeemer, uint256 amount, uint256 ethAmount);
-    event MarketReported(address indexed oracle, Option winningOption, address winningToken);
+    event MarketReported(address indexed oracle, Outcome winningOutcome, address winningToken);
     event MarketResolved(address indexed resolver, uint256 totalEthToSend);
     event LiquidityAdded(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
     event LiquidityRemoved(address indexed provider, uint256 ethAmount, uint256 tokensAmount);
@@ -70,16 +69,9 @@ contract PredictionMarketSolution is Ownable {
     /// Modifiers ///
     /////////////////
 
-    modifier onlyPredictionOpen() {
+    modifier predictionNotReported() {
         if (s_isReported) {
             revert PredictionMarket__PredictionAlreadyResolved();
-        }
-        _;
-    }
-
-    modifier withValidOption(Option _option) {
-        if (_option != Option.YES && _option != Option.NO) {
-            revert PredictionMarket__InvalidOption();
         }
         _;
     }
@@ -89,176 +81,102 @@ contract PredictionMarketSolution is Ownable {
     /////////////////
 
     constructor(
+        address _liquidityProvider,
         address _oracle,
         string memory _question,
         uint256 _initialTokenValue,
         uint8 _initialYesProbability,
         uint8 _percentageToLock
-    ) payable Ownable(msg.sender) {
-        if (msg.value <= 0) {
+    ) payable Ownable(_liquidityProvider) {
+        // /// CHECKPOINT 2 ////
+        if (msg.value == 0) {
             revert PredictionMarket__MustProvideETHForInitialLiquidity();
         }
-        if (_initialYesProbability > 100) {
+        if (_initialYesProbability >= 100 || _initialYesProbability == 0) {
             revert PredictionMarket__InvalidProbability();
         }
 
-        if (_percentageToLock > 100) {
+        if (_percentageToLock >= 100 || _percentageToLock == 0) {
             revert PredictionMarket__InvalidPercentageToLock();
         }
 
         i_oracle = _oracle;
-        i_question = _question;
+        s_question = _question;
         i_initialTokenValue = _initialTokenValue;
-        i_initialProbability = _initialYesProbability;
+        i_initialYesProbability = _initialYesProbability;
         i_percentageLocked = _percentageToLock;
+
         s_ethCollateral = msg.value;
 
+        /// CHECKPOINT 3 ////
+        // Code goes here
+
         uint256 initialTokenAmount = (msg.value * PRECISION) / _initialTokenValue;
-        i_YesToken = new PredictionMarketTokenSolution("Yes", "Y", initialTokenAmount, msg.sender);
-        i_NoToken = new PredictionMarketTokenSolution("No", "N", initialTokenAmount, msg.sender);
+        s_yesToken = new PredictionMarketToken("Yes", "Y", initialTokenAmount, msg.sender);
+        s_noToken = new PredictionMarketToken("No", "N", initialTokenAmount, msg.sender);
 
-        if (_percentageToLock > 0) {
-            uint256 initialYesAmountLocked =
-                (initialTokenAmount * _initialYesProbability * _percentageToLock * 2) / 10000;
-            uint256 initialNoAmountLocked =
-                (initialTokenAmount * (100 - _initialYesProbability) * _percentageToLock * 2) / 10000;
+        uint256 initialYesAmountLocked = (initialTokenAmount * _initialYesProbability * _percentageToLock * 2) / 10000;
+        uint256 initialNoAmountLocked =
+            (initialTokenAmount * (100 - _initialYesProbability) * _percentageToLock * 2) / 10000;
 
-            bool success1 = i_YesToken.transfer(msg.sender, initialYesAmountLocked);
-            bool success2 = i_NoToken.transfer(msg.sender, initialNoAmountLocked);
-            if (!success1 || !success2) {
-                revert PredictionMarket__TokenTransferFailed();
-            }
+        bool success1 = s_yesToken.transfer(msg.sender, initialYesAmountLocked);
+        bool success2 = s_noToken.transfer(msg.sender, initialNoAmountLocked);
+        if (!success1 || !success2) {
+            revert PredictionMarket__TokenTransferFailed();
         }
     }
 
+    function addLiquidity() external payable onlyOwner predictionNotReported {
+        //// CHECKPOINT 4 ////
+        s_ethCollateral += msg.value;
+
+        s_yesToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
+        s_noToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
+
+        emit LiquidityAdded(msg.sender, msg.value, (msg.value * PRECISION) / i_initialTokenValue);
+    }
+
     /**
-     * @notice Buy prediction outcome tokens with ETH, need to call priceInETH function first to get right amount of tokens to buy
-     * @param _option The option (YES or NO) to buy tokens for
-     * @param _amountTokenToBuy Amount of tokens to purchase
+     * @notice Remove liquidity from the prediction market and burn corresponding tokens, if you remove liquidity before prediction ends you got no share of lpReserve
+     * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
      */
-    function buyTokensWithETH(Option _option, uint256 _amountTokenToBuy)
-        external
-        payable
-        onlyPredictionOpen
-        withValidOption(_option)
-    {
-        if (_amountTokenToBuy == 0) {
-            revert PredictionMarket__AmountMustBeGreaterThanZero();
-        }
+    function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner predictionNotReported {
+        //// CHECKPOINT 4 ////
+        uint256 amountTokenToBurn = (_ethToWithdraw / i_initialTokenValue) * PRECISION;
 
-        if (msg.sender == owner()) {
-            revert PredictionMarket__LiquidityProviderCantBuyTokens();
-        }
-
-        uint256 ethNeeded = getBuyPriceInEth(_option, _amountTokenToBuy);
-        if (msg.value != ethNeeded) {
-            revert PredictionMarket__MustSendExactETHAmount();
-        }
-
-        PredictionMarketTokenSolution optionToken = _option == Option.YES ? i_YesToken : i_NoToken;
-
-        if (_amountTokenToBuy > optionToken.balanceOf(address(this))) {
+        if (amountTokenToBurn > (s_yesToken.balanceOf(address(this)))) {
             revert PredictionMarket__InsufficientTokenReserve();
         }
 
-        s_lpTradingRevenue += msg.value;
+        if (amountTokenToBurn > (s_noToken.balanceOf(address(this)))) {
+            revert PredictionMarket__InsufficientTokenReserve();
+        }
 
-        bool success = optionToken.transfer(msg.sender, _amountTokenToBuy);
+        s_ethCollateral -= _ethToWithdraw;
+
+        s_yesToken.burn(address(this), amountTokenToBurn);
+        s_noToken.burn(address(this), amountTokenToBurn);
+
+        (bool success,) = msg.sender.call{value: _ethToWithdraw}("");
         if (!success) {
-            revert PredictionMarket__TokenTransferFailed();
-        }
-
-        emit TokensPurchased(msg.sender, _option, _amountTokenToBuy, msg.value);
-    }
-
-    /**
-     * @notice Sell prediction outcome tokens for ETH, need to call priceInETH function first to get right amount of tokens to buy
-     * @param _option The option (YES or NO) to sell tokens for
-     * @param _tradingAmount The amount of tokens to sell
-     */
-    function sellTokensForEth(Option _option, uint256 _tradingAmount)
-        external
-        onlyPredictionOpen
-        withValidOption(_option)
-    {
-        if (_tradingAmount == 0) {
-            revert PredictionMarket__AmountMustBeGreaterThanZero();
-        }
-
-        if (msg.sender == owner()) {
-            revert PredictionMarket__LiquidityProviderCantSellTokens();
-        }
-
-        PredictionMarketTokenSolution optionToken = _option == Option.YES ? i_YesToken : i_NoToken;
-        uint256 userBalance = optionToken.balanceOf(msg.sender);
-        if (userBalance < _tradingAmount) {
-            revert PredictionMarket__InsufficientBalance(_tradingAmount, userBalance);
-        }
-        uint256 ethToReceive = getSellPriceInEth(_option, _tradingAmount);
-
-        uint256 allowance = optionToken.allowance(msg.sender, address(this));
-        if (allowance < _tradingAmount) {
-            revert PredictionMarket__InsufficientAllowance(_tradingAmount, allowance);
-        }
-
-        s_lpTradingRevenue -= ethToReceive;
-
-        (bool sent,) = msg.sender.call{value: ethToReceive}("");
-        if (!sent) {
             revert PredictionMarket__ETHTransferFailed();
         }
 
-        bool success = optionToken.transferFrom(msg.sender, address(this), _tradingAmount);
-        if (!success) {
-            revert PredictionMarket__TokenTransferFailed();
-        }
-
-        emit TokensSold(msg.sender, _option, _tradingAmount, ethToReceive);
+        emit LiquidityRemoved(msg.sender, _ethToWithdraw, amountTokenToBurn);
     }
 
     /**
-     * @notice Report the winning option for the prediction
-     * @param _winningOption The winning option (YES or NO)
+     * @notice Report the winning outcome for the prediction
+     * @param _winningOutcome The winning outcome (YES or NO)
      */
-    function report(Option _winningOption) external onlyPredictionOpen withValidOption(_winningOption) {
+    function report(Outcome _winningOutcome) external predictionNotReported {
+        //// CHECKPOINT 5 ////
         if (msg.sender != i_oracle) {
             revert PredictionMarket__OnlyOracleCanReport();
         }
-        // Set winning option
-        s_winningToken = _winningOption == Option.YES ? i_YesToken : i_NoToken;
+        s_winningToken = _winningOutcome == Outcome.YES ? s_yesToken : s_noToken;
         s_isReported = true;
-        emit MarketReported(msg.sender, _winningOption, address(s_winningToken));
-    }
-
-    /**
-     * @notice Redeem winning tokens for ETH after prediction is resolved, winning tokens are burned and user receives ETH
-     * @param _amount The amount of winning tokens to redeem
-     */
-    function redeemWinningTokens(uint256 _amount) external {
-        if (_amount == 0) {
-            revert PredictionMarket__AmountMustBeGreaterThanZero();
-        }
-
-        if (!s_isReported) {
-            revert PredictionMarket__PredictionNotResolved();
-        }
-
-        if (s_winningToken.balanceOf(msg.sender) < _amount) {
-            revert PredictionMarket__InsufficientWinningTokens();
-        }
-
-        uint256 ethToReceive = (_amount * i_initialTokenValue) / PRECISION;
-
-        s_ethCollateral -= ethToReceive;
-
-        s_winningToken.burn(msg.sender, _amount);
-
-        (bool success,) = msg.sender.call{value: ethToReceive}("");
-        if (!success) {
-            revert PredictionMarket__ETHTransferFailed();
-        }
-
-        emit WinningTokensRedeemed(msg.sender, _amount, ethToReceive);
+        emit MarketReported(msg.sender, _winningOutcome, address(s_winningToken));
     }
 
     /**
@@ -299,60 +217,127 @@ contract PredictionMarketSolution is Ownable {
     }
 
     /**
-     * @notice Calculate the total ETH price for buying tokens
-     * @param _option The option (YES or NO) to buy tokens for
-     * @param _tradingAmount The amount of tokens to buy
-     * @return The total ETH price
+     * @notice Buy prediction outcome tokens with ETH, need to call priceInETH function first to get right amount of tokens to buy
+     * @param _outcome The possible outcome (YES or NO) to buy tokens for
+     * @param _amountTokenToBuy Amount of tokens to purchase
      */
-    function getBuyPriceInEth(Option _option, uint256 _tradingAmount) public view returns (uint256) {
-        return _calculatePriceInEth(_option, _tradingAmount, false);
+    function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy) external payable predictionNotReported {
+        /// CHECKPOINT 8 ////
+        if (_amountTokenToBuy == 0) {
+            revert PredictionMarket__AmountMustBeGreaterThanZero();
+        }
+
+        uint256 ethNeeded = getBuyPriceInEth(_outcome, _amountTokenToBuy);
+        if (msg.value != ethNeeded) {
+            revert PredictionMarket__MustSendExactETHAmount();
+        }
+
+        PredictionMarketToken optionToken = _outcome == Outcome.YES ? s_yesToken : s_noToken;
+
+        if (_amountTokenToBuy > optionToken.balanceOf(address(this))) {
+            revert PredictionMarket__InsufficientTokenReserve();
+        }
+
+        s_lpTradingRevenue += msg.value;
+
+        bool success = optionToken.transfer(msg.sender, _amountTokenToBuy);
+        if (!success) {
+            revert PredictionMarket__TokenTransferFailed();
+        }
+
+        emit TokensPurchased(msg.sender, _outcome, _amountTokenToBuy, msg.value);
     }
 
     /**
-     * @notice Calculate the total ETH price for selling tokens
-     * @param _option The option (YES or NO) to sell tokens for
+     * @notice Sell prediction outcome tokens for ETH, need to call priceInETH function first to get right amount of tokens to buy
+     * @param _outcome The possible outcome (YES or NO) to sell tokens for
      * @param _tradingAmount The amount of tokens to sell
-     * @return The total ETH price
      */
-    function getSellPriceInEth(Option _option, uint256 _tradingAmount) public view returns (uint256) {
-        return _calculatePriceInEth(_option, _tradingAmount, true);
-    }
+    function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount) external predictionNotReported {
+        /// CHECKPOINT 8 ////
+        if (_tradingAmount == 0) {
+            revert PredictionMarket__AmountMustBeGreaterThanZero();
+        }
 
-    function addLiquidity() external payable onlyOwner onlyPredictionOpen {
-        s_ethCollateral += msg.value;
+        PredictionMarketToken optionToken = _outcome == Outcome.YES ? s_yesToken : s_noToken;
+        uint256 userBalance = optionToken.balanceOf(msg.sender);
+        if (userBalance < _tradingAmount) {
+            revert PredictionMarket__InsufficientBalance(_tradingAmount, userBalance);
+        }
 
-        i_YesToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
-        i_NoToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
+        uint256 allowance = optionToken.allowance(msg.sender, address(this));
+        if (allowance < _tradingAmount) {
+            revert PredictionMarket__InsufficientAllowance(_tradingAmount, allowance);
+        }
 
-        emit LiquidityAdded(msg.sender, msg.value, (msg.value * PRECISION) / i_initialTokenValue);
+        uint256 ethToReceive = getSellPriceInEth(_outcome, _tradingAmount);
+
+        s_lpTradingRevenue -= ethToReceive;
+
+        (bool sent,) = msg.sender.call{value: ethToReceive}("");
+        if (!sent) {
+            revert PredictionMarket__ETHTransferFailed();
+        }
+
+        bool success = optionToken.transferFrom(msg.sender, address(this), _tradingAmount);
+        if (!success) {
+            revert PredictionMarket__TokenTransferFailed();
+        }
+
+        emit TokensSold(msg.sender, _outcome, _tradingAmount, ethToReceive);
     }
 
     /**
-     * @notice Remove liquidity from the prediction market and burn corresponding tokens, if you remove liquidity before prediction ends you got no share of lpReserve
-     * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
+     * @notice Redeem winning tokens for ETH after prediction is resolved, winning tokens are burned and user receives ETH
+     * @param _amount The amount of winning tokens to redeem
      */
-    function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner onlyPredictionOpen {
-        uint256 amountTokenToBurn = (_ethToWithdraw / i_initialTokenValue) * PRECISION;
-
-        if (amountTokenToBurn > (i_YesToken.balanceOf(address(this)))) {
-            revert PredictionMarket__InsufficientTokenReserve();
+    function redeemWinningTokens(uint256 _amount) external {
+        if (_amount == 0) {
+            revert PredictionMarket__AmountMustBeGreaterThanZero();
         }
 
-        if (amountTokenToBurn > (i_NoToken.balanceOf(address(this)))) {
-            revert PredictionMarket__InsufficientTokenReserve();
+        if (!s_isReported) {
+            revert PredictionMarket__PredictionNotResolved();
         }
 
-        s_ethCollateral -= _ethToWithdraw;
+        if (s_winningToken.balanceOf(msg.sender) < _amount) {
+            revert PredictionMarket__InsufficientWinningTokens();
+        }
 
-        i_YesToken.burn(address(this), amountTokenToBurn);
-        i_NoToken.burn(address(this), amountTokenToBurn);
+        uint256 ethToReceive = (_amount * i_initialTokenValue) / PRECISION;
 
-        (bool success,) = msg.sender.call{value: _ethToWithdraw}("");
+        s_ethCollateral -= ethToReceive;
+
+        s_winningToken.burn(msg.sender, _amount);
+
+        (bool success,) = msg.sender.call{value: ethToReceive}("");
         if (!success) {
             revert PredictionMarket__ETHTransferFailed();
         }
 
-        emit LiquidityRemoved(msg.sender, _ethToWithdraw, amountTokenToBurn);
+        emit WinningTokensRedeemed(msg.sender, _amount, ethToReceive);
+    }
+
+    /**
+     * @notice Calculate the total ETH price for buying tokens
+     * @param _outcome The possible outcome (YES or NO) to buy tokens for
+     * @param _tradingAmount The amount of tokens to buy
+     * @return The total ETH price
+     */
+    function getBuyPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
+        /// CHECKPOINT 7 ////
+        return _calculatePriceInEth(_outcome, _tradingAmount, false);
+    }
+
+    /**
+     * @notice Calculate the total ETH price for selling tokens
+     * @param _outcome The possible outcome (YES or NO) to sell tokens for
+     * @param _tradingAmount The amount of tokens to sell
+     * @return The total ETH price
+     */
+    function getSellPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
+        /// CHECKPOINT 7 ////
+        return _calculatePriceInEth(_outcome, _tradingAmount, true);
     }
 
     /////////////////////////
@@ -361,16 +346,17 @@ contract PredictionMarketSolution is Ownable {
 
     /**
      * @dev Internal helper to calculate ETH price for both buying and selling
-     * @param _option The option (YES or NO)
+     * @param _outcome The possible outcome (YES or NO)
      * @param _tradingAmount The amount of tokens
      * @param _isSelling Whether this is a sell calculation
      */
-    function _calculatePriceInEth(Option _option, uint256 _tradingAmount, bool _isSelling)
+    function _calculatePriceInEth(Outcome _outcome, uint256 _tradingAmount, bool _isSelling)
         private
         view
         returns (uint256)
     {
-        (uint256 currentTokenReserve, uint256 currentOtherTokenReserve) = _getCurrentReserves(_option);
+        /// CHECKPOINT 7 ////
+        (uint256 currentTokenReserve, uint256 currentOtherTokenReserve) = _getCurrentReserves(_outcome);
 
         /// Ensure sufficient liquidity when buying
         if (!_isSelling) {
@@ -379,7 +365,7 @@ contract PredictionMarketSolution is Ownable {
             }
         }
 
-        uint256 totalTokenSupply = i_YesToken.totalSupply();
+        uint256 totalTokenSupply = s_yesToken.totalSupply();
 
         /// Before trade
         uint256 currentTokenSoldBefore = totalTokenSupply - currentTokenReserve;
@@ -403,18 +389,17 @@ contract PredictionMarketSolution is Ownable {
         return (i_initialTokenValue * probabilityAvg * _tradingAmount) / (PRECISION * PRECISION);
     }
 
-    function _getCurrentReserves(Option _option) private view returns (uint256, uint256) {
-        if (_option == Option.YES) {
-            return (i_YesToken.balanceOf(address(this)), i_NoToken.balanceOf(address(this)));
+    function _getCurrentReserves(Outcome _outcome) private view returns (uint256, uint256) {
+        /// CHECKPOINT 7 ////
+        if (_outcome == Outcome.YES) {
+            return (s_yesToken.balanceOf(address(this)), s_noToken.balanceOf(address(this)));
         } else {
-            return (i_NoToken.balanceOf(address(this)), i_YesToken.balanceOf(address(this)));
+            return (s_noToken.balanceOf(address(this)), s_yesToken.balanceOf(address(this)));
         }
     }
 
     function _calculateProbability(uint256 tokensSold, uint256 totalSold) private pure returns (uint256) {
-        if (totalSold == 0) {
-            return 50;
-        }
+        /// CHECKPOINT 7 ////
         return (tokensSold * PRECISION) / totalSold;
     }
 
@@ -444,21 +429,21 @@ contract PredictionMarketSolution is Ownable {
             uint256 percentageLocked
         )
     {
-        question = i_question;
-        outcome1 = i_YesToken.name();
-        outcome2 = i_NoToken.name();
+        question = s_question;
+        outcome1 = s_yesToken.name();
+        outcome2 = s_noToken.name();
         oracle = i_oracle;
         initialTokenValue = i_initialTokenValue;
-        yesTokenReserve = i_YesToken.balanceOf(address(this));
-        noTokenReserve = i_NoToken.balanceOf(address(this));
+        yesTokenReserve = s_yesToken.balanceOf(address(this));
+        noTokenReserve = s_noToken.balanceOf(address(this));
         isReported = s_isReported;
-        yesToken = address(i_YesToken);
-        noToken = address(i_NoToken);
+        yesToken = address(s_yesToken);
+        noToken = address(s_noToken);
         winningToken = address(s_winningToken);
         ethCollateral = s_ethCollateral;
         lpTradingRevenue = s_lpTradingRevenue;
         predictionMarketOwner = owner();
-        initialProbability = i_initialProbability;
+        initialProbability = i_initialYesProbability;
         percentageLocked = i_percentageLocked;
     }
 }

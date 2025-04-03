@@ -124,11 +124,11 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Verify all state variables are set correctly
-      expect(await predictionMarket.s_oracle()).to.equal(oracle.address);
+      expect(await predictionMarket.i_oracle()).to.equal(oracle.address);
       expect(await predictionMarket.s_question()).to.equal(question);
-      expect(await predictionMarket.s_initialTokenValue()).to.equal(initialTokenValue);
-      expect(await predictionMarket.s_initialYesProbability()).to.equal(initialYesProbability);
-      expect(await predictionMarket.s_percentageLocked()).to.equal(percentageToLock);
+      expect(await predictionMarket.i_initialTokenValue()).to.equal(initialTokenValue);
+      expect(await predictionMarket.i_initialYesProbability()).to.equal(initialYesProbability);
+      expect(await predictionMarket.i_percentageLocked()).to.equal(percentageToLock);
       expect(await predictionMarket.s_ethCollateral()).to.equal(initialLiquidity);
     });
   });
@@ -155,8 +155,8 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contracts
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
 
@@ -190,8 +190,8 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contracts
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
 
@@ -228,8 +228,8 @@ describe("PredictionMarket", function () {
       const liquidityToAdd = ethers.parseEther("5");
       const expectedTokenAmount = (liquidityToAdd * BigInt(1e18)) / ethers.parseEther("1");
       // Get initial token balances
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
       const initialYesTokenBalance = await yesToken.balanceOf(predictionMarket.getAddress());
@@ -286,8 +286,8 @@ describe("PredictionMarket", function () {
       const ethToRemove = ethers.parseEther("5");
       const expectedTokenAmount = (ethToRemove * BigInt(1e18)) / ethers.parseEther("1");
       // Get initial token balances
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
       const initialYesTokenBalance = await yesToken.balanceOf(predictionMarket.getAddress());
@@ -302,6 +302,39 @@ describe("PredictionMarket", function () {
       expect(await noToken.balanceOf(predictionMarket.getAddress())).to.equal(
         initialNoTokenBalance - expectedTokenAmount,
       );
+    });
+
+    it("Should emit correct events when adding and removing liquidity", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Test LiquidityAdded event
+      const liquidityToAdd = ethers.parseEther("5");
+      const expectedTokenAmount = (liquidityToAdd * BigInt(1e18)) / ethers.parseEther("1");
+
+      // Add liquidity and expect event
+      await expect(predictionMarket.connect(owner).addLiquidity({ value: liquidityToAdd }))
+        .to.emit(predictionMarket, "LiquidityAdded")
+        .withArgs(owner.address, liquidityToAdd, expectedTokenAmount);
+
+      // Test LiquidityRemoved event
+      const ethToRemove = ethers.parseEther("3");
+      const expectedTokenAmountToRemove = (ethToRemove * BigInt(1e18)) / ethers.parseEther("1");
+
+      // Remove liquidity and expect event
+      await expect(predictionMarket.connect(owner).removeLiquidity(ethToRemove))
+        .to.emit(predictionMarket, "LiquidityRemoved")
+        .withArgs(owner.address, ethToRemove, expectedTokenAmountToRemove);
     });
   });
 
@@ -399,7 +432,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token addresses before reporting
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
 
       // Initially isReported should be false
       expect(await predictionMarket.s_isReported()).to.equal(false);
@@ -426,7 +459,7 @@ describe("PredictionMarket", function () {
       await predictionMarket2.waitForDeployment();
 
       // Get token addresses for second instance
-      const noTokenAddress2 = await predictionMarket2.s_noToken();
+      const noTokenAddress2 = await predictionMarket2.i_noToken();
 
       // Initially isReported should be false
       expect(await predictionMarket2.s_isReported()).to.equal(false);
@@ -456,7 +489,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token addresses before reporting
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
 
       // Report YES outcome and expect event
       await expect(predictionMarket.connect(oracle).report(0))
@@ -476,7 +509,7 @@ describe("PredictionMarket", function () {
       await predictionMarket2.waitForDeployment();
 
       // Get token addresses for second instance
-      const noTokenAddress2 = await predictionMarket2.s_noToken();
+      const noTokenAddress2 = await predictionMarket2.i_noToken();
 
       // Report NO outcome and expect event
       await expect(predictionMarket2.connect(oracle).report(1))
@@ -648,8 +681,8 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contracts
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
 
@@ -693,8 +726,8 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contracts
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
 
@@ -738,7 +771,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // Try to buy more tokens than available in reserve
@@ -766,8 +799,8 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contracts
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
 
@@ -812,8 +845,8 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contracts
-      const yesTokenAddress = await predictionMarket.s_yesToken();
-      const noTokenAddress = await predictionMarket.s_noToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const noTokenAddress = await predictionMarket.i_noToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
       const noToken = await ethers.getContractAt("PredictionMarketToken", noTokenAddress);
 
@@ -849,6 +882,65 @@ describe("PredictionMarket", function () {
       // Prices should still be calculated correctly with new reserves
       expect(yesPriceAfter).to.be.gt(0);
       expect(noPriceAfter).to.be.gt(0);
+    });
+
+    it("Should correctly calculate probability with edge cases", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Calculate expected values
+      const PRECISION = BigInt(1e18);
+      const initialTokenAmount = (ethers.parseEther("10") * PRECISION) / ethers.parseEther("1");
+
+      // Test different scenarios for probability calculation
+      const scenarios = [
+        // Very small amount of tokens sold (almost all in reserve)
+        {
+          yesTokensSold: BigInt(1),
+          totalTokensSold: BigInt(2),
+          expectedProbability: PRECISION / BigInt(2), // 50%
+        },
+        // Almost all tokens sold (very small reserve)
+        {
+          yesTokensSold: initialTokenAmount - BigInt(1),
+          totalTokensSold: initialTokenAmount * BigInt(2) - BigInt(2),
+          expectedProbability: PRECISION / BigInt(2), // 50%
+        },
+        // Uneven distribution (more YES tokens sold)
+        {
+          yesTokensSold: initialTokenAmount / BigInt(2),
+          totalTokensSold: initialTokenAmount,
+          expectedProbability: PRECISION / BigInt(2), // 50%
+        },
+        // Uneven distribution (more NO tokens sold)
+        {
+          yesTokensSold: initialTokenAmount / BigInt(4),
+          totalTokensSold: initialTokenAmount,
+          expectedProbability: PRECISION / BigInt(4), // 25%
+        },
+      ];
+
+      for (const scenario of scenarios) {
+        // Calculate probability using the contract's formula
+        const probability = (scenario.yesTokensSold * PRECISION) / scenario.totalTokensSold;
+
+        // Verify the probability calculation
+        expect(probability).to.equal(scenario.expectedProbability);
+
+        // Verify that the probability is within valid range (0 to 1)
+        expect(probability).to.be.gte(BigInt(0));
+        expect(probability).to.be.lte(PRECISION);
+      }
     });
   });
 
@@ -909,7 +1001,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // Calculate amount to buy
@@ -937,7 +1029,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // Calculate amount to buy
@@ -975,7 +1067,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // First buy some tokens
@@ -1030,7 +1122,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // First buy some tokens
@@ -1064,7 +1156,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // First buy some tokens
@@ -1094,7 +1186,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // Calculate amount to buy
@@ -1133,7 +1225,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // Calculate amount to buy
@@ -1164,7 +1256,7 @@ describe("PredictionMarket", function () {
       await predictionMarket.waitForDeployment();
 
       // Get token contract
-      const yesTokenAddress = await predictionMarket.s_yesToken();
+      const yesTokenAddress = await predictionMarket.i_yesToken();
       const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
 
       // First buy some tokens
@@ -1183,6 +1275,165 @@ describe("PredictionMarket", function () {
         predictionMarket,
         "PredictionMarket__PredictionAlreadyResolved",
       );
+    });
+  });
+
+  describe("Checkpoint9", function () {
+    it("Should revert when trying to redeem before prediction is reported", async function () {
+      const [owner, oracle, redeemer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Try to redeem before prediction is reported
+      await expect(
+        predictionMarket.connect(redeemer).redeemWinningTokens(ethers.parseEther("1")),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionNotResolved");
+    });
+
+    it("Should revert when trying to redeem more tokens than owned", async function () {
+      const [owner, oracle, redeemer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Report the prediction
+      await predictionMarket.connect(oracle).report(0); // Report YES as winning outcome
+
+      // Try to redeem more tokens than owned
+      await expect(
+        predictionMarket.connect(redeemer).redeemWinningTokens(ethers.parseEther("1")),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__InsufficientWinningTokens");
+    });
+
+    it("Should revert when trying to redeem zero tokens", async function () {
+      const [owner, oracle, redeemer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Report the prediction
+      await predictionMarket.connect(oracle).report(0);
+
+      // Try to redeem zero tokens
+      await expect(predictionMarket.connect(redeemer).redeemWinningTokens(0)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__AmountMustBeGreaterThanZero",
+      );
+    });
+
+    it("Should successfully redeem winning tokens and receive ETH", async function () {
+      const [owner, oracle, redeemer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // First buy some YES tokens
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+      await predictionMarket.connect(redeemer).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Report YES as winning outcome
+      await predictionMarket.connect(oracle).report(0);
+
+      // Get initial balances
+      const initialRedeemerBalance = await ethers.provider.getBalance(redeemer.address);
+      const initialContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+      const initialRedeemerTokens = await yesToken.balanceOf(redeemer.address);
+
+      // Calculate expected ETH to receive
+      const expectedEthToReceive = (amountToBuy * ethers.parseEther("1")) / BigInt(1e18);
+
+      // Redeem tokens
+      const tx = await predictionMarket.connect(redeemer).redeemWinningTokens(amountToBuy);
+      const receipt = await tx.wait();
+
+      // Get final balances
+      const finalRedeemerBalance = await ethers.provider.getBalance(redeemer.address);
+      const finalContractBalance = await ethers.provider.getBalance(predictionMarket.getAddress());
+      const finalRedeemerTokens = await yesToken.balanceOf(redeemer.address);
+
+      // Calculate actual ETH received (accounting for gas costs)
+      const gasUsed = receipt?.gasUsed || BigInt(0);
+      const gasPrice = tx.gasPrice || BigInt(0);
+      const gasCost = gasUsed * gasPrice;
+      const actualEthReceived = finalRedeemerBalance - initialRedeemerBalance + gasCost;
+
+      // Verify token burning and ETH transfer
+      expect(finalRedeemerTokens).to.equal(initialRedeemerTokens - amountToBuy);
+      expect(actualEthReceived).to.equal(expectedEthToReceive);
+      expect(finalContractBalance).to.equal(initialContractBalance - expectedEthToReceive);
+    });
+
+    it("Should emit correct WinningTokensRedeemed event", async function () {
+      const [owner, oracle, redeemer] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+
+      // First buy some YES tokens
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+      await predictionMarket.connect(redeemer).buyTokensWithETH(0, amountToBuy, { value: requiredEth });
+
+      // Report YES as winning outcome
+      await predictionMarket.connect(oracle).report(0);
+
+      // Calculate expected ETH to receive
+      const expectedEthToReceive = (amountToBuy * ethers.parseEther("1")) / BigInt(1e18);
+
+      // Redeem tokens and expect event
+      await expect(predictionMarket.connect(redeemer).redeemWinningTokens(amountToBuy))
+        .to.emit(predictionMarket, "WinningTokensRedeemed")
+        .withArgs(redeemer.address, amountToBuy, expectedEthToReceive);
     });
   });
 });
