@@ -4,7 +4,7 @@ pragma solidity >=0.8.0 <0.9.0;
 import {PredictionMarketToken} from "./PredictionMarketToken.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract PredictionMarketSolution is Ownable {
+contract PredictionMarket is Ownable {
     /////////////////
     /// Errors //////
     /////////////////
