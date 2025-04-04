@@ -2,6 +2,7 @@ import { HardhatRuntimeEnvironment } from "hardhat/types";
 import { DeployFunction } from "hardhat-deploy/types";
 import { Contract } from "ethers";
 import { ethers } from "hardhat";
+import * as fs from "fs";
 /**
  * Deploys a contract named "YourContract" using the deployer account and
  * constructor arguments set to the deployer address
@@ -44,6 +45,25 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   // Get the deployed contract to interact with it after deploying.
   const predictionMarket = await hre.ethers.getContract<Contract>("PredictionMarket", deployer);
   console.log("PredictionMarket deployed to:", await predictionMarket.getAddress());
+
+  // Get the deployed contract's address and ABI for the YES and NO tokens and copy them to the deployments directory
+  try {
+    const { abi } = JSON.parse(
+      fs.readFileSync("./artifacts/contracts/PredictionMarketToken.sol/PredictionMarketToken.json").toString(),
+    );
+
+    const i_yesToken = await predictionMarket.i_yesToken();
+    const i_noToken = await predictionMarket.i_noToken();
+    const yesToken = { address: i_yesToken, abi };
+    const noToken = { address: i_noToken, abi };
+
+    const chainDir = `./deployments/${hre.network.name}`;
+    fs.writeFileSync(`${chainDir}/PredictionMarketTokenYes.json`, JSON.stringify(yesToken, null, 2));
+    fs.writeFileSync(`${chainDir}/PredictionMarketTokenNo.json`, JSON.stringify(noToken, null, 2));
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (error) {
+    console.error("Error writing token JSON files.");
+  }
 };
 
 export default deployYourContract;
