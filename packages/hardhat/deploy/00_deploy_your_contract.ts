@@ -60,8 +60,7 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
     const chainDir = `./deployments/${hre.network.name}`;
     fs.writeFileSync(`${chainDir}/PredictionMarketTokenYes.json`, JSON.stringify(yesToken, null, 2));
     fs.writeFileSync(`${chainDir}/PredictionMarketTokenNo.json`, JSON.stringify(noToken, null, 2));
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  } catch (error) {
+  } catch {
     console.error("Error writing token JSON files.");
   }
 };
