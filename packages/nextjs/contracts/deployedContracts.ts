@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     PredictionMarket: {
-      address: "0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
+      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
       abi: [
         {
           inputs: [
@@ -131,7 +131,7 @@ const deployedContracts = {
         },
         {
           inputs: [],
-          name: "PredictionMarket__InvalidOption",
+          name: "PredictionMarket__InvalidOutcome",
           type: "error",
         },
         {
@@ -142,16 +142,6 @@ const deployedContracts = {
         {
           inputs: [],
           name: "PredictionMarket__InvalidProbability",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "PredictionMarket__LiquidityProviderCantBuyTokens",
-          type: "error",
-        },
-        {
-          inputs: [],
-          name: "PredictionMarket__LiquidityProviderCantSellTokens",
           type: "error",
         },
         {
@@ -195,6 +185,100 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
+              name: "provider",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "ethAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "tokensAmount",
+              type: "uint256",
+            },
+          ],
+          name: "LiquidityAdded",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "provider",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "ethAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "tokensAmount",
+              type: "uint256",
+            },
+          ],
+          name: "LiquidityRemoved",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "oracle",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "enum PredictionMarket.Outcome",
+              name: "winningOutcome",
+              type: "uint8",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "winningToken",
+              type: "address",
+            },
+          ],
+          name: "MarketReported",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "resolver",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "totalEthToSend",
+              type: "uint256",
+            },
+          ],
+          name: "MarketResolved",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
               name: "previousOwner",
               type: "address",
             },
@@ -209,6 +293,93 @@ const deployedContracts = {
           type: "event",
         },
         {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "buyer",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "enum PredictionMarket.Outcome",
+              name: "outcome",
+              type: "uint8",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "ethAmount",
+              type: "uint256",
+            },
+          ],
+          name: "TokensPurchased",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "seller",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "enum PredictionMarket.Outcome",
+              name: "outcome",
+              type: "uint8",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "ethAmount",
+              type: "uint256",
+            },
+          ],
+          name: "TokensSold",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "address",
+              name: "redeemer",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "ethAmount",
+              type: "uint256",
+            },
+          ],
+          name: "WinningTokensRedeemed",
+          type: "event",
+        },
+        {
           inputs: [],
           name: "addLiquidity",
           outputs: [],
@@ -218,8 +389,8 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "enum PredictionMarket.Option",
-              name: "_option",
+              internalType: "enum PredictionMarket.Outcome",
+              name: "_outcome",
               type: "uint8",
             },
             {
@@ -236,8 +407,8 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "enum PredictionMarket.Option",
-              name: "_option",
+              internalType: "enum PredictionMarket.Outcome",
+              name: "_outcome",
               type: "uint8",
             },
             {
@@ -260,8 +431,8 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "enum PredictionMarket.Option",
-              name: "_option",
+              internalType: "enum PredictionMarket.Outcome",
+              name: "_outcome",
               type: "uint8",
             },
             {
@@ -418,8 +589,8 @@ const deployedContracts = {
         {
           inputs: [
             {
-              internalType: "enum PredictionMarket.Option",
-              name: "_winningOption",
+              internalType: "enum PredictionMarket.Outcome",
+              name: "_winningOutcome",
               type: "uint8",
             },
           ],
@@ -442,153 +613,10 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [],
-          name: "s_ethCollateral",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_initialTokenValue",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_initialYesProbability",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_isReported",
-          outputs: [
-            {
-              internalType: "bool",
-              name: "",
-              type: "bool",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_lpTradingRevenue",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_noToken",
-          outputs: [
-            {
-              internalType: "contract PredictionMarketToken",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_oracle",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_percentageLocked",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_question",
-          outputs: [
-            {
-              internalType: "string",
-              name: "",
-              type: "string",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_winningToken",
-          outputs: [
-            {
-              internalType: "contract PredictionMarketToken",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "s_yesToken",
-          outputs: [
-            {
-              internalType: "contract PredictionMarketToken",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
           inputs: [
             {
-              internalType: "enum PredictionMarket.Option",
-              name: "_option",
+              internalType: "enum PredictionMarket.Outcome",
+              name: "_outcome",
               type: "uint8",
             },
             {

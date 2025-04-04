@@ -47,21 +47,26 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   console.log("PredictionMarket deployed to:", await predictionMarket.getAddress());
 
   // Get the deployed contract's address and ABI for the YES and NO tokens and copy them to the deployments directory
-  try {
-    const { abi } = JSON.parse(
-      fs.readFileSync("./artifacts/contracts/PredictionMarketToken.sol/PredictionMarketToken.json").toString(),
-    );
+  if (predictionMarket.i_yesToken && predictionMarket.i_noToken) {
+    try {
+      const { abi } = JSON.parse(
+        fs.readFileSync("./artifacts/contracts/PredictionMarketToken.sol/PredictionMarketToken.json").toString(),
+      );
 
-    const i_yesToken = await predictionMarket.i_yesToken();
-    const i_noToken = await predictionMarket.i_noToken();
-    const yesToken = { address: i_yesToken, abi };
-    const noToken = { address: i_noToken, abi };
+      const i_yesToken = await predictionMarket.i_yesToken();
+      const i_noToken = await predictionMarket.i_noToken();
+      const yesToken = { address: i_yesToken, abi };
+      const noToken = { address: i_noToken, abi };
 
-    const chainDir = `./deployments/${hre.network.name}`;
-    fs.writeFileSync(`${chainDir}/PredictionMarketTokenYes.json`, JSON.stringify(yesToken, null, 2));
-    fs.writeFileSync(`${chainDir}/PredictionMarketTokenNo.json`, JSON.stringify(noToken, null, 2));
-  } catch {
-    console.error("Error writing token JSON files.");
+      const chainDir = `./deployments/${hre.network.name}`;
+      fs.writeFileSync(`${chainDir}/PredictionMarketTokenYes.json`, JSON.stringify(yesToken, null, 2));
+      fs.writeFileSync(`${chainDir}/PredictionMarketTokenNo.json`, JSON.stringify(noToken, null, 2));
+      console.log("Token JSON files written successfully");
+    } catch (error) {
+      console.error("Error handling token files:", error);
+    }
+  } else {
+    console.log("No Yes, No token contracts deployed yet");
   }
 };
 
