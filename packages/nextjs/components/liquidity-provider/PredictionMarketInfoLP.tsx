@@ -61,9 +61,10 @@ export function PredictionMarketInfoLP() {
   const percentageLocked = prediction?.[15] ?? BigInt(0);
 
   const yesTokenLocked =
-    ((totalSupply ?? BigInt(0)) * BigInt(percentageLocked) * BigInt(initialProbability)) / BigInt(100 * 100);
+    ((totalSupply ?? BigInt(0)) * BigInt(percentageLocked) * BigInt(initialProbability) * BigInt(2)) /
+    BigInt(100 * 100);
   const noTokenLocked =
-    ((totalSupply ?? BigInt(0)) * BigInt(percentageLocked) * (BigInt(100) - BigInt(initialProbability))) /
+    ((totalSupply ?? BigInt(0)) * BigInt(percentageLocked) * (BigInt(100) - BigInt(initialProbability)) * BigInt(2)) /
     BigInt(100 * 100);
   const yesTokenSold = (totalSupply ?? BigInt(0)) - yesTokenLocked - yesTokenReserve;
   const noTokenSold = (totalSupply ?? BigInt(0)) - noTokenLocked - noTokenReserve;
