@@ -213,21 +213,24 @@ contract PredictionMarket is Ownable {
             uint256 percentageLocked
         )
     {
-        // question = s_question;
-        // outcome1 = i_yesToken.name();
-        // outcome2 = i_noToken.name();
+        /// CHECKPOINT 3 ////
         // oracle = i_oracle;
         // initialTokenValue = i_initialTokenValue;
-        // yesTokenReserve = i_yesToken.balanceOf(address(this));
-        // noTokenReserve = i_noToken.balanceOf(address(this));
-        // isReported = s_isReported;
-        // yesToken = address(i_yesToken);
-        // noToken = address(i_noToken);
-        // winningToken = address(s_winningToken);
+        // percentageLocked = i_percentageLocked;
+        // initialProbability = i_initialYesProbability;
+        // question = s_question;
         // ethCollateral = s_ethCollateral;
         // lpTradingRevenue = s_lpTradingRevenue;
         // predictionMarketOwner = owner();
-        // initialProbability = i_initialYesProbability;
-        // percentageLocked = i_percentageLocked;
+        // yesToken = address(i_yesToken);
+        // noToken = address(i_noToken);
+        // outcome1 = i_yesToken.name();
+        // outcome2 = i_noToken.name();
+        // yesTokenReserve = i_yesToken.balanceOf(address(this));
+        // noTokenReserve = i_noToken.balanceOf(address(this));
+
+        /// CHECKPOINT 5 ////
+        // isReported = s_isReported;
+        // winningToken = address(s_winningToken);
     }
 }
