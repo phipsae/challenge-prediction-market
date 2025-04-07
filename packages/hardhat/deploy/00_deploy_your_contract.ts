@@ -28,8 +28,8 @@ const deployYourContract: DeployFunction = async function (hre: HardhatRuntimeEn
   const initialTokenValue = ethers.parseEther("0.01");
   const initialProbability = 50;
   const percentageLocked = 10;
-  const liquidityProvider = "0xca4150f26B2B3e933b9432Ae57DE6354860E180E";
-  const oracle = "0xca4150f26B2B3e933b9432Ae57DE6354860E180E";
+  const liquidityProvider = deployer;
+  const oracle = deployer;
 
   await deploy("PredictionMarket", {
     from: deployer,
