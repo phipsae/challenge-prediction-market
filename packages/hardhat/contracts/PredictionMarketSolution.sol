@@ -119,8 +119,8 @@ contract PredictionMarketSolution is Ownable {
         // Code goes here
 
         uint256 initialTokenAmount = (msg.value * PRECISION) / _initialTokenValue;
-        i_yesToken = new PredictionMarketToken("Yes", "Y", initialTokenAmount, msg.sender);
-        i_noToken = new PredictionMarketToken("No", "N", initialTokenAmount, msg.sender);
+        i_yesToken = new PredictionMarketToken("Yes", "Y", msg.sender, initialTokenAmount);
+        i_noToken = new PredictionMarketToken("No", "N", msg.sender, initialTokenAmount);
 
         uint256 initialYesAmountLocked = (initialTokenAmount * _initialYesProbability * _percentageToLock * 2) / 10000;
         uint256 initialNoAmountLocked =

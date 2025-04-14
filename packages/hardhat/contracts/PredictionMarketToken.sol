@@ -11,7 +11,7 @@ contract PredictionMarketToken is ERC20 {
     address public predictionMarket;
     address public liquidityProvider;
 
-    constructor(string memory name, string memory symbol, uint256 initialSupply, address _liquidityProvider)
+    constructor(string memory name, string memory symbol, address _liquidityProvider, uint256 initialSupply)
         ERC20(name, symbol)
     {
         predictionMarket = msg.sender;
