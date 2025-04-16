@@ -191,7 +191,7 @@ contract PredictionMarket is Ownable {
     /// Getter Functions ///
     ////////////////////////
 
-    function prediction()
+    function getPrediction()
         external
         view
         returns (

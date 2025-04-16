@@ -6,7 +6,7 @@ import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 export function OracleAddress() {
   const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const { data: owner } = useScaffoldReadContract({

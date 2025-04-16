@@ -14,7 +14,7 @@ export function ReportPrediction() {
 
   const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const { data: owner } = useScaffoldReadContract({

@@ -417,7 +417,7 @@ contract PredictionMarketSolution is Ownable {
     /// Getter Functions ///
     ////////////////////////
 
-    function prediction()
+    function getPrediction()
         external
         view
         returns (

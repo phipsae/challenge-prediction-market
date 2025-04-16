@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     PredictionMarket: {
-      address: "0x2279B7A0a67DB372996a5FaB50D91eAA73d2eBe6",
+      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
       abi: [
         {
           inputs: [
@@ -429,45 +429,8 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "enum PredictionMarket.Outcome",
-              name: "_outcome",
-              type: "uint8",
-            },
-            {
-              internalType: "uint256",
-              name: "_tradingAmount",
-              type: "uint256",
-            },
-          ],
-          name: "getSellPriceInEth",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
           inputs: [],
-          name: "owner",
-          outputs: [
-            {
-              internalType: "address",
-              name: "",
-              type: "address",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "prediction",
+          name: "getPrediction",
           outputs: [
             {
               internalType: "string",
@@ -548,6 +511,43 @@ const deployedContracts = {
               internalType: "uint256",
               name: "percentageLocked",
               type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "enum PredictionMarket.Outcome",
+              name: "_outcome",
+              type: "uint8",
+            },
+            {
+              internalType: "uint256",
+              name: "_tradingAmount",
+              type: "uint256",
+            },
+          ],
+          name: "getSellPriceInEth",
+          outputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "owner",
+          outputs: [
+            {
+              internalType: "address",
+              name: "",
+              type: "address",
             },
           ],
           stateMutability: "view",

@@ -10,7 +10,7 @@ import { useScaffoldReadContract, useSelectedNetwork } from "~~/hooks/scaffold-e
 export function PredictionMarketInfoLP() {
   const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const { data: owner } = useScaffoldReadContract({

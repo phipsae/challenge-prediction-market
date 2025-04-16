@@ -26,7 +26,7 @@ export function TokenBalance({
 
   const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const tokenValue = prediction?.[4];
