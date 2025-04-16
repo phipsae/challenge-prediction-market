@@ -733,26 +733,26 @@ $$
 probabilityYes = \frac{tokenSoldYes + tokenLockedYes}{tokenLockedYes+ tokenLockedNo + tokenSoldYes + tokenSoldNo}
 $$
 
-- probabilityBefore = $50\%$
-- probabilityAfter = $(60 + 10 ) / (10 + 10 + 60 + 0) = 87.5\%$
-- probAvg = $(probBefore + probAfter) / 2 = 68.75\%$
-- price = $0.01 ETH * 68.75\% * 60 = 0.4125 ETH$
+- probabilityBefore = 50%
+- probabilityAfter = (60 + 10 ) / (10 + 10 + 60 + 0) = 87.5%
+- probAvg = (probBefore + probAfter) / 2 = 68.75%
+- price = 0.01 ETH \* 68.75% \* 60 = 0.4125 ETH
 
 **2️⃣ Case 2: Buying 60 "Yes" tokens as two trades of 30**
 
 **First trade:**
 
-- probBefore = $50\%$, probAfter = $80\%$
-- probAvg = $65\%$
-- price = $0.01 ETH * 65\% * 30 = 0.195 ETH$
+- probBefore = 50%, probAfter = 80%
+- probAvg = 65%
+- price = 0.01 ETH \* 65% \* 30 = 0.195 ETH
 
 **Second trade:**
 
-- probBefore = $80\%$, probAfter = $87,5\%$
-- probAvg = $83.75\%$
-- price = $0.01 ETH * 83.75\% * 30 = 0.2515 ETH$
+- probBefore = 80%, probAfter = $87,5%
+- probAvg = 83.75%
+- price = 0.01 ETH \* 83.75% \* 30 = 0.2515 ETH
 
-**Total =** $0.195 + 0.25125 = 0.44625 ETH > 0.4125 ETH$
+**Total** = 0.195 + 0.25125 = **0.44625 ETH** > **0.4125 ETH**
 
 > 🧠 **So, why do two smaller trades cost more than one big trade?**
 >
