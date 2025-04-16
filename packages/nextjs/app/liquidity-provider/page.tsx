@@ -21,12 +21,12 @@ const LiquidityProvider: NextPage = () => {
             <PredictionMarketInfoLP />
           </div>
           <div className="md:w-1/2">
-            <div className="bg-base-100 p-6 rounded-xl shadow-lg">
+            <div className="bg-base-100">
               <div className="space-y-4">
-                <div className="border-b pb-4">
+                <div className="mb-6">
                   <LPAddress />
                 </div>
-                <div className="border-b pb-4">
+                <div className="mb-6">
                   <PredictionMarketInfo />
                   <Race />
                 </div>

@@ -40,7 +40,7 @@ export function PredictionMarketInfoLP() {
 
   if (!owner)
     return (
-      <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+      <div className="bg-base-100 p-6 box-border">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
         <p className="text-base-content">No prediction market found</p>
       </div>
@@ -72,7 +72,7 @@ export function PredictionMarketInfoLP() {
   const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
   return (
-    <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+    <div className="bg-base-100 p-6 box-border">
       <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info for Liquidity Provider</h2>
 
       <div className="space-y-6">

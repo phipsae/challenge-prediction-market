@@ -47,8 +47,8 @@ export const HeaderMenuLinks = () => {
               href={href}
               passHref
               className={`${
-                isActive ? "bg-secondary shadow-md" : ""
-              } hover:bg-secondary hover:shadow-md focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-md gap-2 grid grid-flow-col`}
+                isActive ? "bg-secondary" : ""
+              } hover:bg-secondary focus:!bg-secondary active:!text-neutral py-1.5 px-3 text-sm rounded-md gap-2 grid grid-flow-col`}
             >
               {icon}
               <span>{label}</span>

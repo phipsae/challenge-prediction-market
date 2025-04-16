@@ -40,7 +40,7 @@ export function ReportPrediction() {
 
   const isOracle = address === prediction?.[3];
   return (
-    <div className="p-6 bg-base-100 rounded-xl shadow-lg mt-5">
+    <div className="p-6 bg-base-100 mt-5 box-border">
       <h2 className="text-2xl font-bold text-center mb-4">Report Prediction Outcome</h2>
       {!isOracle && <p className="text-error text-center mb-4">Only the oracle can report prediction</p>}
       <div className="flex gap-4">

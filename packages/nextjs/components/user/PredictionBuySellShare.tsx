@@ -86,7 +86,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
   const etherToWin = totalPriceInEth ? etherToReceive - totalPriceInEth : 0n;
 
   return (
-    <div className="p-4 rounded-lg space-y-4">
+    <div className="space-y-4">
       <div className="flex justify-center">Tokens available to buy: {formatEther(yesTokenReserve ?? BigInt(0))}</div>
 
       <ProbabilityDisplay
@@ -101,7 +101,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
         <TokenBalance tokenAddress={tokenAddress as string} option={option as string} redeem={false} />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="">
         {/* Buy Section */}
         <div className={`bg-${colorScheme}-50 p-3 rounded-lg`}>
           <h2 className={`text-lg font-semibold text-${colorScheme}-800 mb-2`}>Buy &quot;{option}&quot;</h2>
@@ -113,7 +113,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
               onChange={e => setInputBuyAmount(BigInt(e.target.value))}
             />
 
-            {totalPriceInEth && (
+            {Boolean(totalPriceInEth) && (
               <>
                 <div className="text-sm"></div>
 
@@ -128,7 +128,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
                 {totalSupply && (
                   <div className="text-sm">
-                    For {Number(formatEther(totalPriceInEth)).toFixed(4)} ETH you have the chance to win Ξ
+                    For {Number(formatEther(totalPriceInEth || 0n)).toFixed(4)} ETH you have the chance to win Ξ
                     {Number(formatEther(etherToReceive)).toFixed(4)} (upside Ξ
                     {Number(formatEther(etherToWin)).toFixed(4)})
                   </div>

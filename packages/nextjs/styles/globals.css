@@ -30,3 +30,15 @@ p {
 .btn.btn-ghost {
   @apply shadow-none;
 }
+
+.tooltip:before {
+  @apply bg-accent text-accent-content;
+}
+
+.tooltip:after {
+  @apply border-b-accent;
+}
+
+.box-border {
+  @apply rounded-lg border border-gray-300 dark:border-gray-500;
+}

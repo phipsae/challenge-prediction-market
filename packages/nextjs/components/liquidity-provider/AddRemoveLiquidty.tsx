@@ -44,7 +44,7 @@ export function AddRemoveLiquidity() {
 
   const isLiquidityProvider = address === prediction?.[13];
   return (
-    <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
+    <div className="p-4 bg-white space-y-4 box-border">
       {!isLiquidityProvider && (
         <p className="text-error text-center mb-4">Only the liquidity provider can add or remove liquidity</p>
       )}

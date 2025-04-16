@@ -167,10 +167,10 @@ const RaceTrack: React.FC = () => {
   }, [raceStarted, raceFinished, startTime, RACE_DURATION, setElapsedTime, setCars, setRaceFinished]);
 
   return (
-    <div className="bg-base-100 p-6 rounded-lg border border-gray-300 dark:border-gray-500">
+    <div className="bg-base-100 mt-6 p-6 box-border">
       <div className="w-full max-w-4xl mx-auto relative">
         <div className="mb-6 flex justify-between items-center">
-          <div className="text-2xl font-bold">
+          <div className="text-xl font-bold">
             {raceFinished ? (
               <span className="flex items-center gap-2">
                 Winner: <span style={{ color: "#e74c3c" }}>Red Car</span> 🏆
