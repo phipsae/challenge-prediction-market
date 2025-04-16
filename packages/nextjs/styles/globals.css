@@ -4,7 +4,7 @@
 
 :root,
 [data-theme] {
-  background: oklch(var(--b2));
+  background: oklch(var(--b1));
 }
 
 body {
@@ -24,7 +24,7 @@ p {
 }
 
 .btn {
-  @apply shadow-md;
+  @apply rounded-md;
 }
 
 .btn.btn-ghost {

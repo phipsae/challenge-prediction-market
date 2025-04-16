@@ -86,7 +86,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
   const etherToWin = totalPriceInEth ? etherToReceive - totalPriceInEth : 0n;
 
   return (
-    <div className="max-w-lg mx-auto p-4 bg-white rounded-xl shadow-lg space-y-4">
+    <div className="p-4 rounded-lg space-y-4">
       <div className="flex justify-center">Tokens available to buy: {formatEther(yesTokenReserve ?? BigInt(0))}</div>
 
       <ProbabilityDisplay

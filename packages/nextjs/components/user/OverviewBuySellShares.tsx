@@ -27,18 +27,18 @@ export function OverviewBuySellShares() {
   const noOutcome = prediction?.[2] ?? "No";
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
+    <div className="p-6 bg-base-100 rounded-lg border border-gray-300 dark:border-gray-500">
       {reported ? (
         <div className="mt-6 w-full">
           <Redeem />
         </div>
       ) : (
-        <div className="flex gap-6">
-          <div className="flex-1 bg-base-200 rounded-lg p-4 border-4 border-green-500">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-base-200 rounded-lg p-4 border-4 border-green-500">
             <h3 className="text-xl font-semibold text-center mb-4 text-green-500">&quot;{yesOutcome}&quot; Token</h3>
             <PredictionBuySellShare optionIndex={0} colorScheme="green" />
           </div>
-          <div className="flex-1 bg-base-200 rounded-lg p-4 border-4 border-red-500">
+          <div className="bg-base-200 rounded-lg p-4 border-4 border-red-500">
             <h3 className="text-xl font-semibold text-center mb-4 text-red-500">&quot;{noOutcome}&quot; Token</h3>
             <PredictionBuySellShare optionIndex={1} colorScheme="red" />
           </div>
