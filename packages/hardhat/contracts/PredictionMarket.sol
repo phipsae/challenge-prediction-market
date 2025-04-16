@@ -86,12 +86,17 @@ contract PredictionMarket is Ownable {
     /// Functions ///
     /////////////////
 
+    /**
+     * @notice Add liquidity to the prediction market and mint tokens
+     * @dev Only the owner can add liquidity and only if the prediction is not reported
+     */
     function addLiquidity() external payable onlyOwner {
         //// CHECKPOINT 4 ////
     }
 
     /**
-     * @notice Remove liquidity from the prediction market and burn corresponding tokens, if you remove liquidity before prediction ends you got no share of lpReserve
+     * @notice Remove liquidity from the prediction market and burn respective tokens, if you remove liquidity before prediction ends you got no share of lpReserve
+     * @dev Only the owner can remove liquidity and only if the prediction is not reported
      * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
      */
     function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner {
@@ -100,6 +105,7 @@ contract PredictionMarket is Ownable {
 
     /**
      * @notice Report the winning outcome for the prediction
+     * @dev Only the oracle can report the winning outcome and only if the prediction is not reported
      * @param _winningOutcome The winning outcome (YES or NO)
      */
     function report(Outcome _winningOutcome) external {
@@ -108,7 +114,7 @@ contract PredictionMarket is Ownable {
 
     /**
      * @notice Owner of contract can redeem winning tokens held by the contract after prediction is resolved and get ETH from the contract including LP revenue and collateral back
-     * @dev Only callable by the owner
+     * @dev Only callable by the owner and only if the prediction is resolved
      * @return ethRedeemed The amount of ETH redeemed
      */
     function resolveMarketAndWithdraw() external onlyOwner returns (uint256 ethRedeemed) {
@@ -135,6 +141,7 @@ contract PredictionMarket is Ownable {
 
     /**
      * @notice Redeem winning tokens for ETH after prediction is resolved, winning tokens are burned and user receives ETH
+     * @dev Only if the prediction is resolved
      * @param _amount The amount of winning tokens to redeem
      */
     function redeemWinningTokens(uint256 _amount) external {
@@ -179,10 +186,21 @@ contract PredictionMarket is Ownable {
         /// CHECKPOINT 7 ////
     }
 
+    /**
+     * @dev Internal helper to get the current reserves of the tokens
+     * @param _outcome The possible outcome (YES or NO)
+     * @return The current reserves of the tokens
+     */
     function _getCurrentReserves(Outcome _outcome) private view returns (uint256, uint256) {
         /// CHECKPOINT 7 ////
     }
 
+    /**
+     * @dev Internal helper to calculate the probability of the tokens
+     * @param tokensSold The number of tokens sold
+     * @param totalSold The total number of tokens sold
+     * @return The probability of the tokens
+     */
     function _calculateProbability(uint256 tokensSold, uint256 totalSold) private pure returns (uint256) {
         /// CHECKPOINT 7 ////
     }
@@ -191,6 +209,9 @@ contract PredictionMarket is Ownable {
     /// Getter Functions ///
     ////////////////////////
 
+    /**
+     * @notice Get the prediction details
+     */
     function getPrediction()
         external
         view
