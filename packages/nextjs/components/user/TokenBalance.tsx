@@ -59,7 +59,7 @@ export function TokenBalance({
             </div>
             <div className="text-gray-700 text-sm">
               ({tokenBalanceValue ? formatEther(tokenBalanceValue) : "0"}{" "}
-              {redeem ? "ETH worth" : "ETH worth in case of win"})
+              {redeem ? "Ξ worth" : "Ξ worth in case of win"})
             </div>
           </h3>
         </div>

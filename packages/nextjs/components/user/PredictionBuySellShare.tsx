@@ -128,7 +128,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
                 {totalSupply && (
                   <div className="text-sm">
-                    For {Number(formatEther(totalPriceInEth)).toFixed(4)} ETH you have the chance to win Ξ
+                    For {Number(formatEther(totalPriceInEth)).toFixed(4)} Ξ you have the chance to win Ξ
                     {Number(formatEther(etherToReceive)).toFixed(4)} (upside Ξ
                     {Number(formatEther(etherToWin)).toFixed(4)})
                   </div>
@@ -168,7 +168,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
             {sellTotalPriceInEth && (
               <>
-                <div className="text-sm">ETH to receive: {formatEther(sellTotalPriceInEth)}</div>
+                <div className="text-sm">Ξ to receive: {formatEther(sellTotalPriceInEth)}</div>
                 <ProbabilityDisplay
                   token1Reserve={(yesTokenReserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())}
                   token2Reserve={noTokenReserve ?? BigInt(0)}

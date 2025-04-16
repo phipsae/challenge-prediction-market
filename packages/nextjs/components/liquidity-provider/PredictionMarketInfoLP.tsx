@@ -124,7 +124,7 @@ export function PredictionMarketInfoLP() {
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt(((yesTokenLocked ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {yesOutcome})
+                Ξ if Oracle reports {yesOutcome})
               </h3>
 
               <h3 className="text-lg mb-2 border-t-4 pt-2">
@@ -139,7 +139,7 @@ export function PredictionMarketInfoLP() {
                 {Number(formatEther(BigInt(((yesTokenReserve ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(
                   2,
                 )}{" "}
-                ETH if Oracle reports {yesOutcome})
+                Ξ if Oracle reports {yesOutcome})
               </h3>
               <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {yesOutcome} <span className="font-bold">tokens sold</span>
@@ -148,7 +148,7 @@ export function PredictionMarketInfoLP() {
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt((BigInt(yesTokenSold) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {yesOutcome})
+                Ξ if Oracle reports {yesOutcome})
               </h3>
             </div>
 
@@ -163,7 +163,7 @@ export function PredictionMarketInfoLP() {
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt(((noTokenLocked ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {noOutcome})
+                Ξ if Oracle reports {noOutcome})
               </h3>
               <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {noOutcome} tokens <span className="font-bold">held by prediction market</span>
@@ -174,7 +174,7 @@ export function PredictionMarketInfoLP() {
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
                 {Number(formatEther(BigInt(((noTokenReserve ?? 0) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {noOutcome})
+                Ξ if Oracle reports {noOutcome})
               </h3>
               <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {noOutcome} <span className="font-bold">tokens sold</span>
@@ -182,8 +182,8 @@ export function PredictionMarketInfoLP() {
               <div className="stat-value text-lg">{Number(formatEther(BigInt(noTokenSold))).toFixed(2)} tokens</div>
               <h3 className="text-sm mb-2 pt-2">
                 (Value of tokens{" "}
-                {Number(formatEther(BigInt((BigInt(noTokenSold) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)}{" "}
-                ETH if Oracle reports {noOutcome})
+                {Number(formatEther(BigInt((BigInt(noTokenSold) * (tokenValue ?? 0)) / BigInt(10 ** 18)))).toFixed(2)} Ξ
+                if Oracle reports {noOutcome})
               </h3>
             </div>
           </div>
@@ -199,7 +199,7 @@ export function PredictionMarketInfoLP() {
                   ),
                 ),
               ).toFixed(4)}{" "}
-              ETH
+              Ξ
             </h3>
             <h3 className="text-sm mb-2 pt-2">
               Value of {winningOption} tokens held by users:{" "}
@@ -212,7 +212,7 @@ export function PredictionMarketInfoLP() {
                   ),
                 ),
               ).toFixed(4)}{" "}
-              ETH
+              Ξ
             </h3>
             <h3 className="text-sm mb-2">
               &quot;{winningToken === yesToken ? noOutcome : yesOutcome}&quot; tokens have no value anymore
