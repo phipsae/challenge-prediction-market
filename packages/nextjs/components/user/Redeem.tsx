@@ -11,7 +11,7 @@ export function Redeem() {
 
   const { data: prediction, isLoading } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const { writeContractAsync } = useScaffoldWriteContract({

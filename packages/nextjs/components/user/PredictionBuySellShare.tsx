@@ -23,7 +23,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
   const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const { data: owner } = useScaffoldReadContract({
@@ -128,7 +128,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
                 {totalSupply && (
                   <div className="text-sm">
-                    For {Number(formatEther(totalPriceInEth || 0n)).toFixed(4)} ETH you have the chance to win Ξ
+                    For {Number(formatEther(totalPriceInEth || 0n)).toFixed(4)} Ξ you have the chance to win Ξ
                     {Number(formatEther(etherToReceive)).toFixed(4)} (upside Ξ
                     {Number(formatEther(etherToWin)).toFixed(4)})
                   </div>
@@ -168,6 +168,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
 
             {Boolean(sellTotalPriceInEth) && (
               <>
+                <div className="text-sm">Ξ to receive: {formatEther(sellTotalPriceInEth || 0n)}</div>
                 <ProbabilityDisplay
                   token1Reserve={(yesTokenReserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())}
                   token2Reserve={noTokenReserve ?? BigInt(0)}

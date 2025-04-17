@@ -6,7 +6,7 @@ import { useScaffoldContract, useScaffoldReadContract, useScaffoldWriteContract 
 export function ResolveMarketAndWithdraw() {
   const { data: prediction } = useScaffoldReadContract({
     contractName: "PredictionMarket",
-    functionName: "prediction",
+    functionName: "getPrediction",
   });
 
   const { data: owner } = useScaffoldReadContract({
