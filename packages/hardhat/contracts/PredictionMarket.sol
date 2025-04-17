@@ -1,8 +1,8 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.8.0 <0.9.0;
 
-import { PredictionMarketToken } from "./PredictionMarketToken.sol";
-import { Ownable } from "@openzeppelin/contracts/access/Ownable.sol";
+import {PredictionMarketToken} from "./PredictionMarketToken.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract PredictionMarket is Ownable {
     /////////////////
@@ -78,6 +78,7 @@ contract PredictionMarket is Ownable {
         uint8 _percentageToLock
     ) payable Ownable(_liquidityProvider) {
         /// CHECKPOINT 2 ////
+
         /// CHECKPOINT 3 ////
     }
 
@@ -177,11 +178,11 @@ contract PredictionMarket is Ownable {
      * @param _tradingAmount The amount of tokens
      * @param _isSelling Whether this is a sell calculation
      */
-    function _calculatePriceInEth(
-        Outcome _outcome,
-        uint256 _tradingAmount,
-        bool _isSelling
-    ) private view returns (uint256) {
+    function _calculatePriceInEth(Outcome _outcome, uint256 _tradingAmount, bool _isSelling)
+        private
+        view
+        returns (uint256)
+    {
         /// CHECKPOINT 7 ////
     }
 
@@ -248,6 +249,7 @@ contract PredictionMarket is Ownable {
         // outcome2 = i_noToken.name();
         // yesTokenReserve = i_yesToken.balanceOf(address(this));
         // noTokenReserve = i_noToken.balanceOf(address(this));
+
         /// CHECKPOINT 5 ////
         // isReported = s_isReported;
         // winningToken = address(s_winningToken);
