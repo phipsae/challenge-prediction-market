@@ -2,16 +2,22 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { PredictionMarket } from "../typechain-types";
 
-describe("PredictionMarket", function () {
+describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
   // We define a fixture to reuse the same setup in every test.
 
   let predictionMarket: PredictionMarket;
   let owner: any;
   let oracle: any;
 
+  let contractArtifact = "";
+  if (process.env.CONTRACT_ADDRESS) {
+    contractArtifact = `contracts/download-${process.env.CONTRACT_ADDRESS}.sol:PredictionMarket1`;
+  } else {
+    contractArtifact = "contracts/PredictionMarket.sol:PredictionMarket";
+  }
   before(async () => {
     [owner, oracle] = await ethers.getSigners();
-    const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+    const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
     predictionMarket = (await predictionMarketFactory.deploy(
       owner.address,
       oracle.address,
@@ -27,7 +33,7 @@ describe("PredictionMarket", function () {
   describe("Checkpoint2", function () {
     it("Should revert when no ETH is provided for initial liquidity", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
 
       await expect(
         predictionMarketFactory.deploy(
@@ -44,7 +50,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when initialYesProbability is 0 or >= 100", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
 
       // Test case 1: initialYesProbability = 0
       await expect(
@@ -75,7 +81,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when percentageToLock is >= 100 or 0", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
 
       // Test case 1: percentageToLock = 0
       await expect(
@@ -111,7 +117,7 @@ describe("PredictionMarket", function () {
       const percentageToLock = 10;
       const initialLiquidity = ethers.parseEther("1");
 
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -142,7 +148,7 @@ describe("PredictionMarket", function () {
       const percentageToLock = 10;
       const initialLiquidity = ethers.parseEther("1");
 
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -177,7 +183,7 @@ describe("PredictionMarket", function () {
       const percentageToLock = 10;
       const initialLiquidity = ethers.parseEther("1");
 
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -213,7 +219,7 @@ describe("PredictionMarket", function () {
   describe("Checkpoint4", function () {
     it("Should successfully add liquidity, mint tokens and update state variables", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -248,7 +254,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to remove more tokens than available", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -271,7 +277,7 @@ describe("PredictionMarket", function () {
     });
     it("Should successfully remove liquidity, burn tokens and update state variables", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -306,7 +312,7 @@ describe("PredictionMarket", function () {
 
     it("Should emit correct events when adding and removing liquidity", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -351,7 +357,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to remove liquidity after prediction is reported", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -374,7 +380,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to report after prediction is reported", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -398,7 +404,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to report when not called by the s_oracle", async function () {
       const [owner, oracle, nonOracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -419,7 +425,7 @@ describe("PredictionMarket", function () {
 
     it("Should correctly set winning token and isReported flag when reporting", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -476,7 +482,7 @@ describe("PredictionMarket", function () {
 
     it("Should emit correct MarketReported event when reporting", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -521,7 +527,7 @@ describe("PredictionMarket", function () {
   describe("Checkpoint6", function () {
     it("Should revert when trying to resolve before prediction is reported", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -542,7 +548,7 @@ describe("PredictionMarket", function () {
 
     it("Should correctly resolve market and withdraw ETH", async function () {
       const [owner, oracle, nonOwner] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -614,7 +620,7 @@ describe("PredictionMarket", function () {
 
     it("Should send exact totalEthToSend amount to msg.sender", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -668,7 +674,7 @@ describe("PredictionMarket", function () {
   describe("Checkpoint7", function () {
     it("Should correctly calculate buy price in ETH", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -713,7 +719,7 @@ describe("PredictionMarket", function () {
 
     it("Should correctly calculate sell price in ETH", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -758,7 +764,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to buy more tokens than available in reserve", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -786,7 +792,7 @@ describe("PredictionMarket", function () {
 
     it("Should correctly calculate probability for different token amounts", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -832,7 +838,7 @@ describe("PredictionMarket", function () {
 
     it("Should correctly get current reserves for both YES and NO outcomes", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -886,7 +892,7 @@ describe("PredictionMarket", function () {
 
     it("Should correctly calculate probability with edge cases", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -947,7 +953,7 @@ describe("PredictionMarket", function () {
   describe("Checkpoint8", function () {
     it("Should revert when trying to buy tokens with zero amount", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -967,7 +973,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to sell tokens with zero amount", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -988,7 +994,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to buy tokens with incorrect ETH amount", async function () {
       const [owner, oracle] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1016,7 +1022,7 @@ describe("PredictionMarket", function () {
 
     it("Should successfully buy tokens with ETH", async function () {
       const [owner, oracle, buyer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1054,7 +1060,7 @@ describe("PredictionMarket", function () {
 
     it("Should successfully sell tokens for ETH", async function () {
       const [owner, oracle, seller] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1109,7 +1115,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to sell more tokens than owned", async function () {
       const [owner, oracle, seller] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1143,7 +1149,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to sell tokens without approval", async function () {
       const [owner, oracle, seller] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1173,7 +1179,7 @@ describe("PredictionMarket", function () {
 
     it("Should emit correct events when buying and selling tokens", async function () {
       const [owner, oracle, trader] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1212,7 +1218,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to buy tokens after prediction is reported", async function () {
       const [owner, oracle, buyer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1243,7 +1249,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to sell tokens after prediction is reported", async function () {
       const [owner, oracle, seller] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1281,7 +1287,7 @@ describe("PredictionMarket", function () {
   describe("Checkpoint9", function () {
     it("Should revert when trying to redeem before prediction is reported", async function () {
       const [owner, oracle, redeemer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1301,7 +1307,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to redeem more tokens than owned", async function () {
       const [owner, oracle, redeemer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1324,7 +1330,7 @@ describe("PredictionMarket", function () {
 
     it("Should revert when trying to redeem zero tokens", async function () {
       const [owner, oracle, redeemer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1348,7 +1354,7 @@ describe("PredictionMarket", function () {
 
     it("Should successfully redeem winning tokens and receive ETH", async function () {
       const [owner, oracle, redeemer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,
@@ -1403,7 +1409,7 @@ describe("PredictionMarket", function () {
 
     it("Should emit correct WinningTokensRedeemed event", async function () {
       const [owner, oracle, redeemer] = await ethers.getSigners();
-      const predictionMarketFactory = await ethers.getContractFactory("PredictionMarket");
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
         oracle.address,

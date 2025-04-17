@@ -1,4 +1,4 @@
-# 🚩 Challenge 6:📈📉 Build a Prediction Market
+# 🚩 Challenge 6:📈📉🏎️ Build a Prediction Market
 
 ![readme-4](packages/nextjs/public/hero.png)
 
