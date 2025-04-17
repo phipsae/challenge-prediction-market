@@ -101,9 +101,9 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
         <TokenBalance tokenAddress={tokenAddress as string} option={option as string} redeem={false} />
       </div>
 
-      <div className="">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Buy Section */}
-        <div className={`bg-${colorScheme}-50 p-3 rounded-lg`}>
+        <div className={`bg-${colorScheme}-50 rounded-lg`}>
           <h2 className={`text-lg font-semibold text-${colorScheme}-800 mb-2`}>Buy &quot;{option}&quot;</h2>
           <div className="space-y-2">
             <input
@@ -137,7 +137,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
             )}
 
             <button
-              className={`btn btn-sm w-full btn-primary text-white`}
+              className={`btn btn-sm btn-primary min-w-32`}
               disabled={!totalPriceInEth}
               onClick={async () => {
                 try {
@@ -156,7 +156,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
           </div>
         </div>
 
-        <div className="bg-base-100 p-3 rounded-lg">
+        <div className="bg-base-100 rounded-lg">
           <h2 className="text-lg font-semibold mb-2">Sell &quot;{option}&quot;</h2>
           <div className="space-y-2">
             <input
@@ -166,9 +166,8 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
               onChange={e => setInputSellAmount(BigInt(e.target.value))}
             />
 
-            {sellTotalPriceInEth && (
+            {Boolean(sellTotalPriceInEth) && (
               <>
-                <div className="text-sm">ETH to receive: {formatEther(sellTotalPriceInEth)}</div>
                 <ProbabilityDisplay
                   token1Reserve={(yesTokenReserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())}
                   token2Reserve={noTokenReserve ?? BigInt(0)}
@@ -177,10 +176,11 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
                   isReported={isReported}
                   winningOption={winningOption}
                 />
+                <div className="text-sm">ETH to receive: {formatEther(sellTotalPriceInEth || 0n)}</div>
               </>
             )}
 
-            <div className="flex gap-2">
+            <div className="">
               <GiveAllowance
                 tokenAddress={tokenAddress as string}
                 spenderAddress={contractAddress ?? ""}
@@ -188,7 +188,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
                 showInput={false}
               />
               <button
-                className="btn btn-sm flex-1 btn-primary text-white"
+                className="mt-2 btn btn-sm btn-primary min-w-32"
                 onClick={async () => {
                   try {
                     await writeYourContractAsync({
