@@ -12,13 +12,13 @@ export const metadata = getMetadata({
 const Prediction: NextPage = () => {
   return (
     <>
-      <div className="text-center p-4 lg:p-10">
-        <div className="grid grid-cols-1 lg:grid-cols-6 gap-6">
-          <div className="lg:col-span-2">
+      <div className="p-4 lg:p-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="">
             <PredictionMarketInfo />
             <Race />
           </div>
-          <div className="lg:col-span-4">
+          <div className="">
             <OverviewBuySellShares />
           </div>
         </div>

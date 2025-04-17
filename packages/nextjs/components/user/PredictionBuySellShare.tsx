@@ -86,123 +86,153 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
   const etherToWin = totalPriceInEth ? etherToReceive - totalPriceInEth : 0n;
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-center">Tokens available to buy: {formatEther(yesTokenReserve ?? BigInt(0))}</div>
-
-      <ProbabilityDisplay
-        token1Reserve={yesTokenReserve ?? BigInt(0)}
-        token2Reserve={noTokenReserve ?? BigInt(0)}
-        tokenAddress={tokenAddress as string}
-        isReported={isReported}
-        winningOption={winningOption}
-      />
-
-      <div className="flex justify-center">
-        <TokenBalance tokenAddress={tokenAddress as string} option={option as string} redeem={false} />
-      </div>
-
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-        {/* Buy Section */}
-        <div className={`bg-${colorScheme}-50 rounded-lg`}>
-          <h2 className={`text-lg font-semibold text-${colorScheme}-800 mb-2`}>Buy &quot;{option}&quot;</h2>
-          <div className="space-y-2">
-            <input
-              type="number"
-              placeholder="Amount to buy"
-              className="input input-bordered input-sm w-full rounded-md"
-              onChange={e => setInputBuyAmount(BigInt(e.target.value))}
+    <div>
+      <h2 className={`mt-0 mb-6 text-center text-xl font-semibold text-${colorScheme}-500`}>
+        Tokens available to buy: {formatEther(yesTokenReserve ?? BigInt(0))}
+      </h2>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div>
+          <div className="text-center">
+            <ProbabilityDisplay
+              token1Reserve={yesTokenReserve ?? BigInt(0)}
+              token2Reserve={noTokenReserve ?? BigInt(0)}
+              tokenAddress={tokenAddress as string}
+              isReported={isReported}
+              winningOption={winningOption}
             />
+          </div>
 
-            {Boolean(totalPriceInEth) && (
-              <>
-                <div className="text-sm"></div>
-
-                <ProbabilityDisplay
-                  token1Reserve={(yesTokenReserve ?? BigInt(0)) - parseEther((inputBuyAmount || BigInt(0)).toString())}
-                  token2Reserve={noTokenReserve ?? BigInt(0)}
-                  tokenAddress={tokenAddress as string}
-                  label="New Probability"
-                  isReported={isReported}
-                  winningOption={winningOption}
-                />
-
-                {totalSupply && (
-                  <div className="text-sm">
-                    For {Number(formatEther(totalPriceInEth || 0n)).toFixed(4)} Ξ you have the chance to win Ξ
-                    {Number(formatEther(etherToReceive)).toFixed(4)} (upside Ξ
-                    {Number(formatEther(etherToWin)).toFixed(4)})
-                  </div>
-                )}
-              </>
-            )}
-
-            <button
-              className={`btn btn-sm btn-primary min-w-32`}
-              disabled={!totalPriceInEth}
-              onClick={async () => {
-                try {
-                  await writeYourContractAsync({
-                    functionName: "buyTokensWithETH",
-                    args: [optionIndex, tokenBuyAmount],
-                    value: totalPriceInEth,
-                  });
-                } catch (e) {
-                  console.error("Error buying tokens:", e);
-                }
-              }}
-            >
-              Buy
-            </button>
+          <div className="mt-4">
+            <TokenBalance tokenAddress={tokenAddress as string} option={option as string} redeem={false} />
           </div>
         </div>
-
-        <div className="bg-base-100 rounded-lg">
-          <h2 className="text-lg font-semibold mb-2">Sell &quot;{option}&quot;</h2>
-          <div className="space-y-2">
+        <div>
+          <div role="tablist" className="tabs tabs-bordered tabs-lg">
             <input
-              type="number"
-              placeholder="Amount to sell"
-              className="input input-bordered input-sm w-full rounded-md"
-              onChange={e => setInputSellAmount(BigInt(e.target.value))}
+              type="radio"
+              name={`${colorScheme}_buy_sell_tab`}
+              role="tab"
+              className="tab font-medium min-w-36"
+              aria-label={`Buy "${option}"`}
+              defaultChecked
             />
+            <div role="tabpanel" className="tab-content pt-4">
+              <div className={`bg-${colorScheme}-50 rounded-lg`}>
+                <div className="space-y-4">
+                  <input
+                    type="number"
+                    placeholder="Amount to buy"
+                    className="input input-bordered input-sm w-full rounded-md"
+                    onChange={e => setInputBuyAmount(BigInt(e.target.value))}
+                  />
 
-            {Boolean(sellTotalPriceInEth) && (
-              <>
-                <div className="text-sm">Ξ to receive: {formatEther(sellTotalPriceInEth || 0n)}</div>
-                <ProbabilityDisplay
-                  token1Reserve={(yesTokenReserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())}
-                  token2Reserve={noTokenReserve ?? BigInt(0)}
-                  tokenAddress={tokenAddress as string}
-                  label="New Probability"
-                  isReported={isReported}
-                  winningOption={winningOption}
-                />
-                <div className="text-sm">ETH to receive: {formatEther(sellTotalPriceInEth || 0n)}</div>
-              </>
-            )}
+                  {Boolean(totalPriceInEth) && (
+                    <>
+                      <div className="text-center">
+                        <ProbabilityDisplay
+                          token1Reserve={
+                            (yesTokenReserve ?? BigInt(0)) - parseEther((inputBuyAmount || BigInt(0)).toString())
+                          }
+                          token2Reserve={noTokenReserve ?? BigInt(0)}
+                          tokenAddress={tokenAddress as string}
+                          label="New Probability"
+                          isReported={isReported}
+                          winningOption={winningOption}
+                        />
+                      </div>
 
-            <div className="">
-              <GiveAllowance
-                tokenAddress={tokenAddress as string}
-                spenderAddress={contractAddress ?? ""}
-                amount={inputSellAmount.toString()}
-                showInput={false}
-              />
-              <button
-                className="mt-2 btn btn-sm btn-primary min-w-32"
-                onClick={async () => {
-                  try {
-                    await writeYourContractAsync({
-                      functionName: "sellTokensForEth",
-                      args: [optionIndex, tokenSellAmount],
-                    });
-                  } catch (e) {
-                    console.error("Error selling tokens:", e);
-                  }
-                }}
-              >
-                Sell
-              </button>
+                      {totalSupply && (
+                        <p className="text-sm">
+                          For {Number(formatEther(totalPriceInEth || 0n)).toFixed(4)} Ξ you have the chance to win Ξ
+                          {Number(formatEther(etherToReceive)).toFixed(4)} (upside Ξ
+                          {Number(formatEther(etherToWin)).toFixed(4)})
+                        </p>
+                      )}
+                    </>
+                  )}
+
+                  <button
+                    className={`btn btn-sm btn-primary min-w-32`}
+                    disabled={!totalPriceInEth}
+                    onClick={async () => {
+                      try {
+                        await writeYourContractAsync({
+                          functionName: "buyTokensWithETH",
+                          args: [optionIndex, tokenBuyAmount],
+                          value: totalPriceInEth,
+                        });
+                      } catch (e) {
+                        console.error("Error buying tokens:", e);
+                      }
+                    }}
+                  >
+                    Buy
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <input
+              type="radio"
+              name={`${colorScheme}_buy_sell_tab`}
+              role="tab"
+              className="tab font-medium min-w-36"
+              aria-label={`Sell "${option}"`}
+            />
+            <div role="tabpanel" className="tab-content pt-4">
+              <div className="bg-base-100 rounded-lg">
+                <div className="space-y-4">
+                  <input
+                    type="number"
+                    placeholder="Amount to sell"
+                    className="input input-bordered input-sm w-full rounded-md"
+                    onChange={e => setInputSellAmount(BigInt(e.target.value))}
+                  />
+
+                  {Boolean(sellTotalPriceInEth) && (
+                    <>
+                      <p className="text-sm">Ξ to receive: {formatEther(sellTotalPriceInEth || 0n)}</p>
+                      <div className="text-center">
+                        <ProbabilityDisplay
+                          token1Reserve={
+                            (yesTokenReserve ?? BigInt(0)) + parseEther((inputSellAmount || BigInt(0)).toString())
+                          }
+                          token2Reserve={noTokenReserve ?? BigInt(0)}
+                          tokenAddress={tokenAddress as string}
+                          label="New Probability"
+                          isReported={isReported}
+                          winningOption={winningOption}
+                        />
+                      </div>
+                      <p className="text-sm">ETH to receive: {formatEther(sellTotalPriceInEth || 0n)}</p>
+                    </>
+                  )}
+
+                  <div className="flex items-center gap-4">
+                    <GiveAllowance
+                      tokenAddress={tokenAddress as string}
+                      spenderAddress={contractAddress ?? ""}
+                      amount={inputSellAmount.toString()}
+                      showInput={false}
+                    />
+                    <button
+                      className="btn btn-sm btn-primary min-w-32"
+                      onClick={async () => {
+                        try {
+                          await writeYourContractAsync({
+                            functionName: "sellTokensForEth",
+                            args: [optionIndex, tokenSellAmount],
+                          });
+                        } catch (e) {
+                          console.error("Error selling tokens:", e);
+                        }
+                      }}
+                    >
+                      Sell
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
