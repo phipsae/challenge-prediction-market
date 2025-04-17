@@ -55,7 +55,7 @@ export function ProbabilityDisplay({
   return (
     <div className="bg-base-200 p-4 rounded-lg">
       <h3 className="text-lg font-semibold mb-2">{label || "Probability"}</h3>
-      <div className="radial-progress text-neutral" style={{ "--value": probability * 100 } as any}>
+      <div className="radial-progress" style={{ "--value": probability * 100 } as any}>
         {(probability * 100).toFixed(2) + "%"}
       </div>
     </div>

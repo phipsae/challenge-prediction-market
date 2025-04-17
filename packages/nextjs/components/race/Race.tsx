@@ -196,7 +196,7 @@ const RaceTrack: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative w-full h-[200px] bg-gray-200 rounded-lg overflow-hidden">
+        <div className="relative w-full h-[200px] bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
           <RaceEffects isRacing={raceStarted && !raceFinished} />
 
           <div className="absolute top-0 bottom-0 w-4 bg-black" style={{ left: "90%", zIndex: 5 }}>
@@ -210,7 +210,7 @@ const RaceTrack: React.FC = () => {
             </div>
           </div>
 
-          <div className="absolute left-0 right-0 h-[2px] bg-white" style={{ top: "50%" }}></div>
+          <div className="absolute left-0 right-0 h-[2px] bg-white dark:bg-black" style={{ top: "50%" }}></div>
 
           {cars.map(car => (
             <Car

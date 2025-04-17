@@ -109,7 +109,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
             <input
               type="number"
               placeholder="Amount to buy"
-              className="input input-bordered input-sm w-full"
+              className="input input-bordered input-sm w-full rounded-md"
               onChange={e => setInputBuyAmount(BigInt(e.target.value))}
             />
 
@@ -162,7 +162,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
             <input
               type="number"
               placeholder="Amount to sell"
-              className="input input-bordered input-sm w-full"
+              className="input input-bordered input-sm w-full rounded-md"
               onChange={e => setInputSellAmount(BigInt(e.target.value))}
             />
 
