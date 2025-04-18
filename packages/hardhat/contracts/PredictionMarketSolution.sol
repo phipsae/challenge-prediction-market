@@ -18,7 +18,7 @@ contract PredictionMarketSolution is Ownable {
     error PredictionMarket__InsufficientWinningTokens();
     error PredictionMarket__AmountMustBeGreaterThanZero();
     error PredictionMarket__MustSendExactETHAmount();
-    error PredictionMarket__InsufficientTokenReserve();
+    error PredictionMarket__InsufficientTokenReserve(Outcome _outcome, uint256 _amountToken);
     error PredictionMarket__TokenTransferFailed();
     error PredictionMarket__NoTokensToRedeem();
     error PredictionMarket__ETHTransferFailed();
@@ -163,11 +163,11 @@ contract PredictionMarketSolution is Ownable {
         uint256 amountTokenToBurn = (_ethToWithdraw / i_initialTokenValue) * PRECISION;
 
         if (amountTokenToBurn > (i_yesToken.balanceOf(address(this)))) {
-            revert PredictionMarket__InsufficientTokenReserve();
+            revert PredictionMarket__InsufficientTokenReserve(Outcome.YES, amountTokenToBurn);
         }
 
         if (amountTokenToBurn > (i_noToken.balanceOf(address(this)))) {
-            revert PredictionMarket__InsufficientTokenReserve();
+            revert PredictionMarket__InsufficientTokenReserve(Outcome.NO, amountTokenToBurn);
         }
 
         s_ethCollateral -= _ethToWithdraw;
@@ -256,7 +256,7 @@ contract PredictionMarketSolution is Ownable {
         PredictionMarketToken optionToken = _outcome == Outcome.YES ? i_yesToken : i_noToken;
 
         if (_amountTokenToBuy > optionToken.balanceOf(address(this))) {
-            revert PredictionMarket__InsufficientTokenReserve();
+            revert PredictionMarket__InsufficientTokenReserve(_outcome, _amountTokenToBuy);
         }
 
         s_lpTradingRevenue += msg.value;
