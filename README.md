@@ -449,14 +449,16 @@ After thinking through the guiding questions, have a look at the solution code!
 /// Functions ///
 /////////////////
 
-function addLiquidity() external payable onlyOwner {
+function addLiquidity() external payable onlyOwner predictionNotReported {
     // //// CHECKPOINT 4 ////
     s_ethCollateral += msg.value;
 
-    i_yesToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
-    i_noToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
+    uint256 tokensAmount = (msg.value * PRECISION) / i_initialTokenValue;
 
-    emit LiquidityAdded(msg.sender, msg.value, (msg.value * PRECISION) / i_initialTokenValue);
+    i_yesToken.mint(address(this), tokensAmount);
+    i_noToken.mint(address(this), tokensAmount);
+
+    emit LiquidityAdded(msg.sender, msg.value, tokensAmount);
 }
 
 function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner {
