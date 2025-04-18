@@ -15,18 +15,18 @@ export const metadata = getMetadata({
 const LiquidityProvider: NextPage = () => {
   return (
     <>
-      <div className="text-center mt-8 bg-secondary p-4 md:p-10">
-        <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch">
-          <div className="md:w-1/2">
+      <div className="p-4 md:p-10">
+        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+          <div className="md:w-3/5">
             <PredictionMarketInfoLP />
           </div>
-          <div className="md:w-1/2">
-            <div className="bg-base-100 p-6 rounded-xl shadow-lg">
-              <div className="space-y-4">
-                <div className="border-b pb-4">
+          <div className="md:w-2/5">
+            <div className="bg-base-100">
+              <div className="space-y-6">
+                <div className="mb-6">
                   <LPAddress />
                 </div>
-                <div className="border-b pb-4">
+                <div className="mb-6">
                   <PredictionMarketInfo />
                   <Race />
                 </div>

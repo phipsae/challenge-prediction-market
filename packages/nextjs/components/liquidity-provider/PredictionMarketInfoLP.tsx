@@ -40,7 +40,7 @@ export function PredictionMarketInfoLP() {
 
   if (!owner)
     return (
-      <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
+      <div className="bg-base-100 p-6 box-border">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
         <p className="text-base-content">No prediction market found</p>
       </div>
@@ -72,22 +72,22 @@ export function PredictionMarketInfoLP() {
   const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
   return (
-    <div className="bg-base-100 p-6 rounded-lg shadow-lg max-w-2xl mx-auto">
-      <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info for Liquidity Provider</h2>
+    <div className="bg-base-100">
+      <h2 className="text-2xl font-bold mb-6 text-left">Prediction Market Info for Liquidity Provider</h2>
 
-      <div className="space-y-6">
-        <div className="bg-base-200 p-4 rounded-lg">
-          <div className="stats shadow w-full">
-            <div className="stat">
-              <div className="text-xl">Prediciton Market Collateral</div>
-              (Amount of ETH that goes to the winning token)
+      <div className="space-y-10">
+        <div className="">
+          <div className="stats shadow w-full rounded-lg">
+            <div className="stat text-left">
+              <div className="text-xl font-medium">Prediciton Market Collateral</div>
+              <span className="text-sm">(Amount of ETH that goes to the winning token)</span>
               <div className="stat-value text-primary pt-2">
                 {Number(formatEther(BigInt(ethCollateral ?? 0))).toFixed(4)} ETH
               </div>
             </div>
-            <div className="stat">
-              <div className="text-xl">LP Revenue</div>
-              (Token revenue when token gets bought/sold)
+            <div className="stat text-left">
+              <div className="text-xl font-medium">LP Revenue</div>
+              <span className="text-sm">(Token revenue when token gets bought/sold)</span>
               <div className="stat-value text-primary pt-2">
                 {Number(formatEther(BigInt(lpTradingRevenue ?? 0))).toFixed(4)} ETH
               </div>
@@ -95,18 +95,20 @@ export function PredictionMarketInfoLP() {
           </div>
         </div>
 
-        <div className="bg-base-200 p-4 rounded-lg">
-          <div className="stats shadow w-full">
-            <div className="stat flex flex-row items-center justify-center">
+        <div>
+          <div className="">
+            <div className="flex items-center gap-8">
               <div>
-                <div className="text-xl">Token Value</div>
+                <div className="text-xl font-medium">Token Value</div>
                 <div className="text-sm">
                   {isReported
                     ? `(Value of winning token "${winningOption}" in ETH)`
                     : "(Value of winning token in ETH)"}
                 </div>
               </div>
-              <div className="text-primary text-xl">{Number(formatEther(BigInt(tokenValue ?? 0))).toFixed(4)} ETH</div>
+              <div className="text-primary text-2xl font-bold">
+                {Number(formatEther(BigInt(tokenValue ?? 0))).toFixed(4)} ETH
+              </div>
             </div>
           </div>
         </div>

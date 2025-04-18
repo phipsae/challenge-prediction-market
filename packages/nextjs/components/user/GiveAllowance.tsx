@@ -59,7 +59,7 @@ export function GiveAllowance({
         />
       )}
       <button
-        className={`btn btn-sm ${showInput ? "w-full" : "flex-1"} bg-gray-600 hover:bg-gray-700 text-white`}
+        className={`btn btn-sm ${showInput ? "w-full" : "min-w-32"} bg-gray-600 hover:bg-gray-700 text-white`}
         onClick={handleApprove}
       >
         Approve
