@@ -449,26 +449,28 @@ After thinking through the guiding questions, have a look at the solution code!
 /// Functions ///
 /////////////////
 
-function addLiquidity() external payable onlyOwner {
+function addLiquidity() external payable onlyOwner predictionNotReported {
     // //// CHECKPOINT 4 ////
     s_ethCollateral += msg.value;
 
-    i_yesToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
-    i_noToken.mint(address(this), (msg.value * PRECISION) / i_initialTokenValue);
+    uint256 tokensAmount = (msg.value * PRECISION) / i_initialTokenValue;
 
-    emit LiquidityAdded(msg.sender, msg.value, (msg.value * PRECISION) / i_initialTokenValue);
+    i_yesToken.mint(address(this), tokensAmount);
+    i_noToken.mint(address(this), tokensAmount);
+
+    emit LiquidityAdded(msg.sender, msg.value, tokensAmount);
 }
 
-function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner {
+function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner predictionNotReported {
     //// CHECKPOINT 4 ////
     uint256 amountTokenToBurn = (_ethToWithdraw / i_initialTokenValue) * PRECISION;
 
     if (amountTokenToBurn > (i_yesToken.balanceOf(address(this)))) {
-        revert PredictionMarket__InsufficientTokenReserve();
+        revert PredictionMarket__InsufficientTokenReserve(Outcome.YES, amountTokenToBurn);
     }
 
     if (amountTokenToBurn > (i_noToken.balanceOf(address(this)))) {
-        revert PredictionMarket__InsufficientTokenReserve();
+        revert PredictionMarket__InsufficientTokenReserve(Outcome.NO, amountTokenToBurn);
     }
 
     s_ethCollateral -= _ethToWithdraw;
@@ -986,11 +988,13 @@ modifier amountGreaterThanZero(uint256 _amount) {
  /// Functions ///
  /////////////////
 
-function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy) external payable predictionNotReported {
-    if (_amountTokenToBuy == 0) {
-        revert PredictionMarket__AmountMustBeGreaterThanZero();
-    }
-
+function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy)
+    external
+    payable
+    amountGreaterThanZero(_amountTokenToBuy)
+    predictionNotReported
+{
+    /// CHECKPOINT 8 ////
     uint256 ethNeeded = getBuyPriceInEth(_outcome, _amountTokenToBuy);
     if (msg.value != ethNeeded) {
         revert PredictionMarket__MustSendExactETHAmount();
@@ -999,7 +1003,7 @@ function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy) external 
     PredictionMarketToken optionToken = _outcome == Outcome.YES ? i_yesToken : i_noToken;
 
     if (_amountTokenToBuy > optionToken.balanceOf(address(this))) {
-        revert PredictionMarket__InsufficientTokenReserve();
+        revert PredictionMarket__InsufficientTokenReserve(_outcome, _amountTokenToBuy);
     }
 
     s_lpTradingRevenue += msg.value;
