@@ -27,20 +27,38 @@ export function OverviewBuySellShares() {
   const noOutcome = prediction?.[2] ?? "No";
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
+    <div>
       {reported ? (
-        <div className="mt-6 w-full">
+        <div className="w-full">
           <Redeem />
         </div>
       ) : (
-        <div className="flex gap-6">
-          <div className="flex-1 bg-base-200 rounded-lg p-4 border-4 border-green-500">
-            <h3 className="text-xl font-semibold text-center mb-4 text-green-500">&quot;{yesOutcome}&quot; Token</h3>
-            <PredictionBuySellShare optionIndex={0} colorScheme="green" />
+        <div role="tablist" className="tabs tabs-lg">
+          <input
+            type="radio"
+            name="token_tabs"
+            role="tab"
+            className="tab font-lexend font-semibold text-green-500 min-w-40 rounded-tl-md rounded-tr-md bg-base-200 checked:bg-green-500 checked:text-white"
+            aria-label={`"${yesOutcome}" Token`}
+            defaultChecked
+          />
+          <div role="tabpanel" className="tab-content border-l-0">
+            <div className="rounded-bl-lg rounded-br-lg p-4 border-4 border-green-500">
+              <PredictionBuySellShare optionIndex={0} colorScheme="green" />
+            </div>
           </div>
-          <div className="flex-1 bg-base-200 rounded-lg p-4 border-4 border-red-500">
-            <h3 className="text-xl font-semibold text-center mb-4 text-red-500">&quot;{noOutcome}&quot; Token</h3>
-            <PredictionBuySellShare optionIndex={1} colorScheme="red" />
+
+          <input
+            type="radio"
+            name="token_tabs"
+            role="tab"
+            className="tab font-lexend font-semibold text-red-500 min-w-40 rounded-md bg-base-200 checked:bg-red-500 checked:text-white ml-4"
+            aria-label={`"${noOutcome}" Token`}
+          />
+          <div role="tabpanel" className="tab-content border-l-0">
+            <div className="rounded-bl-lg rounded-br-lg p-4 border-4 border-red-500">
+              <PredictionBuySellShare optionIndex={1} colorScheme="red" />
+            </div>
           </div>
         </div>
       )}
