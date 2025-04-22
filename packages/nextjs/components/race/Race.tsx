@@ -217,6 +217,7 @@ const RaceTrack: React.FC = () => {
             width={1000}
             height={1000}
             className="w-full h-auto"
+            suppressHydrationWarning
           />
           <div className="relative w-full h-[200px] bg-gray-200 dark:bg-gray-700 overflow-hidden">
             <RaceEffects isRacing={raceStarted && !raceFinished} />
