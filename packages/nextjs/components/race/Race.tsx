@@ -174,7 +174,7 @@ const RaceTrack: React.FC = () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       if (raceInterval.current) clearInterval(raceInterval.current);
     };
-  }, [raceStarted, raceFinished, startTime, RACE_DURATION, setElapsedTime, setCars, setRaceFinished]);
+  }, [raceStarted, raceFinished, startTime, RACE_DURATION, setElapsedTime, setCars, setRaceFinished, carSpeeds]);
 
   return (
     <div className="bg-base-100 mt-6 p-6 box-border">
