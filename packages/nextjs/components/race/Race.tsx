@@ -2,11 +2,16 @@
 
 import React, { useEffect, useRef } from "react";
 import Image from "next/image";
+import BackgroundImageDark from "../assets/race-assets/background-dark.svg";
+import BackgroundImage from "../assets/race-assets/background.svg";
 import Car from "./Car";
 import RaceEffects from "./RaceEffects";
+import { useTheme } from "next-themes";
 import { useRaceStore } from "~~/services/store/raceStore";
 
 const RaceTrack: React.FC = () => {
+  const { resolvedTheme } = useTheme();
+
   // Race configuration
   const RACE_DURATION = 30; // Duration in seconds
 
@@ -16,31 +21,26 @@ const RaceTrack: React.FC = () => {
     elapsedTime,
     cars,
     startTime,
+    carSpeeds,
     setRaceStarted,
     setRaceFinished,
     setElapsedTime,
     setCars,
     setStartTime,
+    setCarSpeeds,
     resetRace,
   } = useRaceStore();
 
   const raceInterval = useRef<NodeJS.Timeout | null>(null);
-  const carSpeeds = useRef<{ [key: number]: number }>({});
-
-  // Generate random speeds between 2.5 and 3.5 units per second
-  const generateRandomSpeeds = () => {
-    carSpeeds.current = {
-      0: 2.5 + Math.random() * 1, // Green car speed
-      1: 2.5 + Math.random() * 1, // Red car speed
-    };
-    console.log("Car speeds:", carSpeeds.current); // Debug log
-  };
 
   // Start the race with a fixed duration
   const startRace = () => {
     if (raceStarted) return;
 
-    generateRandomSpeeds();
+    setCarSpeeds({
+      0: 2.5 + Math.random() * 1,
+      1: 2.5 + Math.random() * 1,
+    });
     const newStartTime = Date.now();
     setStartTime(newStartTime);
     setRaceStarted(true);
@@ -58,8 +58,8 @@ const RaceTrack: React.FC = () => {
         // At race end, set final positions
         setElapsedTime(RACE_DURATION);
         setCars([
-          { id: 1, position: carSpeeds.current[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
-          { id: 2, position: carSpeeds.current[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
+          { id: 1, position: carSpeeds[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
+          { id: 2, position: carSpeeds[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
         ]);
         setRaceFinished(true);
         if (raceInterval.current) clearInterval(raceInterval.current);
@@ -67,8 +67,8 @@ const RaceTrack: React.FC = () => {
         setElapsedTime(currentTime);
         // Update positions based on random speeds
         setCars([
-          { id: 1, position: carSpeeds.current[0] * currentTime, lane: 0, color: "#2ecc71" },
-          { id: 2, position: carSpeeds.current[1] * currentTime, lane: 1, color: "#e74c3c" },
+          { id: 1, position: carSpeeds[0] * currentTime, lane: 0, color: "#2ecc71" },
+          { id: 2, position: carSpeeds[1] * currentTime, lane: 1, color: "#e74c3c" },
         ]);
       }
     }, 100); // update every 100ms
@@ -104,15 +104,15 @@ const RaceTrack: React.FC = () => {
             if (updatedTime >= RACE_DURATION) {
               setElapsedTime(RACE_DURATION);
               setCars([
-                { id: 1, position: carSpeeds.current[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
-                { id: 2, position: carSpeeds.current[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
+                { id: 1, position: carSpeeds[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
+                { id: 2, position: carSpeeds[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
               ]);
               setRaceFinished(true);
               if (raceInterval.current) clearInterval(raceInterval.current);
             } else {
               setElapsedTime(updatedTime);
-              const redPosition = carSpeeds.current[0] * updatedTime;
-              const bluePosition = carSpeeds.current[1] * updatedTime;
+              const redPosition = carSpeeds[0] * updatedTime;
+              const bluePosition = carSpeeds[1] * updatedTime;
               setCars([
                 { id: 1, position: redPosition, lane: 0, color: "#2ecc71" },
                 { id: 2, position: bluePosition, lane: 1, color: "#e74c3c" },
@@ -123,8 +123,8 @@ const RaceTrack: React.FC = () => {
           // Race has finished while tab was hidden
           setElapsedTime(RACE_DURATION);
           setCars([
-            { id: 1, position: carSpeeds.current[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
-            { id: 2, position: carSpeeds.current[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
+            { id: 1, position: carSpeeds[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
+            { id: 2, position: carSpeeds[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
           ]);
           setRaceFinished(true);
         }
@@ -143,15 +143,15 @@ const RaceTrack: React.FC = () => {
           if (updatedTime >= RACE_DURATION) {
             setElapsedTime(RACE_DURATION);
             setCars([
-              { id: 1, position: carSpeeds.current[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
-              { id: 2, position: carSpeeds.current[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
+              { id: 1, position: carSpeeds[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
+              { id: 2, position: carSpeeds[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
             ]);
             setRaceFinished(true);
             if (raceInterval.current) clearInterval(raceInterval.current);
           } else {
             setElapsedTime(updatedTime);
-            const redPosition = carSpeeds.current[0] * updatedTime;
-            const bluePosition = carSpeeds.current[1] * updatedTime;
+            const redPosition = carSpeeds[0] * updatedTime;
+            const bluePosition = carSpeeds[1] * updatedTime;
             setCars([
               { id: 1, position: redPosition, lane: 0, color: "#2ecc71" },
               { id: 2, position: bluePosition, lane: 1, color: "#e74c3c" },
@@ -161,8 +161,8 @@ const RaceTrack: React.FC = () => {
       } else {
         setElapsedTime(RACE_DURATION);
         setCars([
-          { id: 1, position: carSpeeds.current[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
-          { id: 2, position: carSpeeds.current[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
+          { id: 1, position: carSpeeds[0] * RACE_DURATION, lane: 0, color: "#2ecc71" },
+          { id: 2, position: carSpeeds[1] * RACE_DURATION, lane: 1, color: "#e74c3c" },
         ]);
         setRaceFinished(true);
       }
@@ -203,7 +203,7 @@ const RaceTrack: React.FC = () => {
             </button>
             <button
               onClick={resetRace}
-              className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-bold rounded-md transition-colors"
+              className="px-4 py-2 bg-[#529AF2] hover:bg-[#4280d9] text-white font-bold rounded-md transition-colors"
             >
               Reset Race
             </button>
@@ -212,7 +212,7 @@ const RaceTrack: React.FC = () => {
 
         <div className="rounded-lg overflow-hidden">
           <Image
-            src="/background-mountains.png"
+            src={resolvedTheme === "dark" ? BackgroundImageDark : BackgroundImage}
             alt="Mountain Background"
             width={1000}
             height={1000}
