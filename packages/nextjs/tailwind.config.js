@@ -43,7 +43,7 @@ module.exports = {
           "base-100": "oklch(20.768% 0.039 265.754)",
           "base-200": "oklch(19.314% 0.037 265.754)",
           "base-300": "oklch(17.86% 0.034 265.754)",
-          "base-content": "oklch(84.153% 0.007 265.754)",
+          "base-content": "oklch(100% 0 0)",
           info: "oklch(68.455% 0.148 237.251)",
           success: "oklch(78.452% 0.132 181.911)",
           warning: "oklch(83.242% 0.139 82.95)",
