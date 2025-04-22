@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
+import Image from "next/image";
 import Car from "./Car";
 import RaceEffects from "./RaceEffects";
 import { useRaceStore } from "~~/services/store/raceStore";
@@ -196,31 +197,47 @@ const RaceTrack: React.FC = () => {
           </div>
         </div>
 
-        <div className="relative w-full h-[200px] bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden">
-          <RaceEffects isRacing={raceStarted && !raceFinished} />
+        <div className="rounded-lg overflow-hidden">
+          <Image
+            src="/background-mountains.png"
+            alt="Mountain Background"
+            width={1000}
+            height={1000}
+            className="w-full h-auto"
+          />
+          <div className="relative w-full h-[200px] bg-gray-200 dark:bg-gray-700 overflow-hidden">
+            <RaceEffects isRacing={raceStarted && !raceFinished} />
 
-          <div className="absolute top-0 bottom-0 w-4 bg-black" style={{ left: "90%", zIndex: 5 }}>
-            <div className="h-full w-full grid grid-cols-2 grid-rows-4">
-              {[...Array(8)].map((_, i) => (
-                <div
-                  key={i}
-                  className={`w-full h-full ${(Math.floor(i / 2) + i) % 2 === 0 ? "bg-black" : "bg-white"}`}
-                />
-              ))}
+            <div className="absolute top-0 bottom-0 w-4 bg-black" style={{ left: "90%", zIndex: 5 }}>
+              <div className="h-full w-full grid grid-cols-2 grid-rows-4">
+                {[...Array(8)].map((_, i) => (
+                  <div
+                    key={i}
+                    className={`w-full h-full ${(Math.floor(i / 2) + i) % 2 === 0 ? "bg-black" : "bg-white"}`}
+                  />
+                ))}
+              </div>
             </div>
+
+            <div
+              className="absolute left-0 right-[50px] h-[3px]"
+              style={{
+                top: "50%",
+                background:
+                  "repeating-linear-gradient(90deg, transparent 0px, transparent 50px, white 50px, white 100px)",
+              }}
+            ></div>
+
+            {cars.map(car => (
+              <Car
+                key={car.id}
+                position={car.position}
+                lane={car.lane}
+                color={car.color}
+                isWinner={raceFinished && car.id === 2} // Car 2 (red) is the winner
+              />
+            ))}
           </div>
-
-          <div className="absolute left-0 right-0 h-[2px] bg-white dark:bg-black" style={{ top: "50%" }}></div>
-
-          {cars.map(car => (
-            <Car
-              key={car.id}
-              position={car.position}
-              lane={car.lane}
-              color={car.color}
-              isWinner={raceFinished && car.id === 2} // Car 2 (red) is the winner
-            />
-          ))}
         </div>
       </div>
     </div>
