@@ -8,7 +8,7 @@ module.exports = {
     themes: [
       {
         light: {
-          primary: "oklch(61.302% 0.202 261.294)",
+          primary: "#529AF2",
           "primary-content": "oklch(100% 0 0)",
           secondary: "oklch(77.464% 0.062 217.469)",
           "secondary-content": "oklch(15.492% 0.012 217.469)",
