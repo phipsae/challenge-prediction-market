@@ -1,6 +1,6 @@
 :root,
 [data-theme] {
-  background: oklch(var(--b1));
+  background: oklch(var(--b1)) !important;
 }
 
 h1,
