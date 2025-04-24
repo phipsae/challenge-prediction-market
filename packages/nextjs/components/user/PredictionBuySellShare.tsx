@@ -90,7 +90,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
       <h2 className={`mt-0 mb-6 text-center text-xl font-semibold text-${colorScheme}-500`}>
         Tokens available to buy: {formatEther(yesTokenReserve ?? BigInt(0))}
       </h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
         <div>
           <div className="text-center">
             <ProbabilityDisplay
@@ -112,7 +112,7 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
               type="radio"
               name={`${colorScheme}_buy_sell_tab`}
               role="tab"
-              className="tab font-medium min-w-36"
+              className="tab font-medium min-w-32"
               aria-label={`Buy "${option}"`}
               defaultChecked
             />
@@ -176,11 +176,11 @@ export function PredictionBuySellShare({ optionIndex, colorScheme }: { optionInd
               type="radio"
               name={`${colorScheme}_buy_sell_tab`}
               role="tab"
-              className="tab font-medium min-w-36"
+              className="tab px-2 font-medium min-w-32"
               aria-label={`Sell "${option}"`}
             />
             <div role="tabpanel" className="tab-content pt-4">
-              <div className="bg-base-100 rounded-lg">
+              <div className="">
                 <div className="space-y-4">
                   <input
                     type="number"
