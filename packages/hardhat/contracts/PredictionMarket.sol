@@ -39,11 +39,11 @@ contract PredictionMarket is Ownable {
 
     uint256 private constant PRECISION = 1e18;
 
-    /// checkpoint 2 ///
+    /// Checkpoint 2 ///
 
-    /// checkpoint 3 ///
+    /// Checkpoint 3 ///
 
-    /// checkpoint 5 ///
+    /// Checkpoint 5 ///
 
     /////////////////////////
     /// Events //////
@@ -61,9 +61,9 @@ contract PredictionMarket is Ownable {
     /// Modifiers ///
     /////////////////
 
-    /// checkpoint 5 ///
+    /// Checkpoint 5 ///
 
-    /// checkpoint 8 ///
+    /// Checkpoint 8 ///
 
     //////////////////
     ////Constructor///
@@ -77,9 +77,9 @@ contract PredictionMarket is Ownable {
         uint8 _initialYesProbability,
         uint8 _percentageToLock
     ) payable Ownable(_liquidityProvider) {
-        /// CHECKPOINT 2 ////
+        /// Checkpoint 2 ////
 
-        /// CHECKPOINT 3 ////
+        /// Checkpoint 3 ////
     }
 
     /////////////////
@@ -91,7 +91,7 @@ contract PredictionMarket is Ownable {
      * @dev Only the owner can add liquidity and only if the prediction is not reported
      */
     function addLiquidity() external payable onlyOwner {
-        //// CHECKPOINT 4 ////
+        //// Checkpoint 4 ////
     }
 
     /**
@@ -100,7 +100,7 @@ contract PredictionMarket is Ownable {
      * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
      */
     function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner {
-        //// CHECKPOINT 4 ////
+        //// Checkpoint 4 ////
     }
 
     /**
@@ -109,7 +109,7 @@ contract PredictionMarket is Ownable {
      * @param _winningOutcome The winning outcome (YES or NO)
      */
     function report(Outcome _winningOutcome) external {
-        //// CHECKPOINT 5 ////
+        //// Checkpoint 5 ////
     }
 
     /**
@@ -118,7 +118,7 @@ contract PredictionMarket is Ownable {
      * @return ethRedeemed The amount of ETH redeemed
      */
     function resolveMarketAndWithdraw() external onlyOwner returns (uint256 ethRedeemed) {
-        /// CHECKPOINT 6 ////
+        /// Checkpoint 6 ////
     }
 
     /**
@@ -127,7 +127,7 @@ contract PredictionMarket is Ownable {
      * @param _amountTokenToBuy Amount of tokens to purchase
      */
     function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy) external payable {
-        /// CHECKPOINT 8 ////
+        /// Checkpoint 8 ////
     }
 
     /**
@@ -136,7 +136,7 @@ contract PredictionMarket is Ownable {
      * @param _tradingAmount The amount of tokens to sell
      */
     function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount) external {
-        /// CHECKPOINT 8 ////
+        /// Checkpoint 8 ////
     }
 
     /**
@@ -145,7 +145,7 @@ contract PredictionMarket is Ownable {
      * @param _amount The amount of winning tokens to redeem
      */
     function redeemWinningTokens(uint256 _amount) external {
-        /// CHECKPOINT 9 ////
+        /// Checkpoint 9 ////
     }
 
     /**
@@ -155,7 +155,7 @@ contract PredictionMarket is Ownable {
      * @return The total ETH price
      */
     function getBuyPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
     }
 
     /**
@@ -165,7 +165,7 @@ contract PredictionMarket is Ownable {
      * @return The total ETH price
      */
     function getSellPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
     }
 
     /////////////////////////
@@ -183,7 +183,7 @@ contract PredictionMarket is Ownable {
         view
         returns (uint256)
     {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
     }
 
     /**
@@ -192,7 +192,7 @@ contract PredictionMarket is Ownable {
      * @return The current reserves of the tokens
      */
     function _getCurrentReserves(Outcome _outcome) private view returns (uint256, uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
     }
 
     /**
@@ -202,7 +202,7 @@ contract PredictionMarket is Ownable {
      * @return The probability of the tokens
      */
     function _calculateProbability(uint256 tokensSold, uint256 totalSold) private pure returns (uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
     }
 
     /////////////////////////
@@ -234,7 +234,7 @@ contract PredictionMarket is Ownable {
             uint256 percentageLocked
         )
     {
-        /// CHECKPOINT 3 ////
+        /// Checkpoint 3 ////
         // oracle = i_oracle;
         // initialTokenValue = i_initialTokenValue;
         // percentageLocked = i_percentageLocked;
@@ -250,7 +250,7 @@ contract PredictionMarket is Ownable {
         // yesTokenReserve = i_yesToken.balanceOf(address(this));
         // noTokenReserve = i_noToken.balanceOf(address(this));
 
-        /// CHECKPOINT 5 ////
+        /// Checkpoint 5 ////
         // isReported = s_isReported;
         // winningToken = address(s_winningToken);
     }
