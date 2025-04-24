@@ -31,7 +31,7 @@ export function PredictionMarketInfo() {
   const winningOption = winningToken === optionToken1 ? predictionOutcome1 : predictionOutcome2;
 
   return (
-    <div className="bg-base-100 p-6 box-border">
+    <div className="bg-base-100 p-6 border-default">
       <div className="space-y-6">
         <div className="bg-base-200 p-4 rounded-lg">
           <div className="flex justify-between items-center">

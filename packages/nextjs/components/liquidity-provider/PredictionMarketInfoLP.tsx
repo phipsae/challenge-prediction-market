@@ -40,7 +40,7 @@ export function PredictionMarketInfoLP() {
 
   if (!owner)
     return (
-      <div className="bg-base-100 p-6 box-border">
+      <div className="bg-base-100 p-6 border-default">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
         <p className="text-base-content">No prediction market found</p>
       </div>
@@ -114,7 +114,7 @@ export function PredictionMarketInfoLP() {
         </div>
 
         {!isReported ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Yes Token */}
             <div className="bg-base-200 p-4 rounded-lg border-4 border-green-500">
               <h2 className="text-2xl font-semibold mb-2">&quot;{yesOutcome}&quot; Token</h2>

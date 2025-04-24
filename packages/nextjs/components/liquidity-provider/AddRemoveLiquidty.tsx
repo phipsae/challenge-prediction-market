@@ -27,7 +27,7 @@ export function AddRemoveLiquidity() {
 
   if (!owner)
     return (
-      <div className="p-4 space-y-4 box-border">
+      <div className="p-4 space-y-4 border-default">
         <h2 className="text-lg font-semibold text-center">No prediction market found</h2>
       </div>
     );
@@ -44,7 +44,7 @@ export function AddRemoveLiquidity() {
 
   const isLiquidityProvider = address === prediction?.[13];
   return (
-    <div className="p-4 space-y-4 box-border">
+    <div className="p-4 space-y-4 border-default">
       {!isLiquidityProvider && (
         <p className="text-error text-center mb-4">Only the liquidity provider can add or remove liquidity</p>
       )}

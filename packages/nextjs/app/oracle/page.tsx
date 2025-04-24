@@ -13,7 +13,7 @@ export const metadata = getMetadata({
 const Oracle: NextPage = () => {
   return (
     <>
-      <div className="container mx-auto text-center mt-8 p-4 md:p-10">
+      <div className="text-center mt-8 p-4 md:p-10">
         <div className="flex flex-col md:flex-row justify-center gap-6">
           <div className="flex-1">
             <PredictionMarketInfo />
