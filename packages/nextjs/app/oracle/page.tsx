@@ -14,14 +14,16 @@ const Oracle: NextPage = () => {
   return (
     <>
       <div className="text-center mt-8 p-4 md:p-10">
-        <div className="flex flex-col md:flex-row justify-center gap-6">
-          <div className="flex-1">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div>
+            <div className="p-6 border-default">
+              <OracleAddress />
+            </div>
+            <ReportPrediction />
+          </div>
+          <div>
             <PredictionMarketInfo />
             <Race />
-          </div>
-          <div className="flex-1">
-            <OracleAddress />
-            <ReportPrediction />
           </div>
         </div>
       </div>

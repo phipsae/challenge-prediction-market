@@ -16,7 +16,7 @@ const LiquidityProvider: NextPage = () => {
     <>
       <div className="p-4 md:p-10">
         <h2 className="text-2xl font-bold mb-6 text-left">Prediction Market Info for Liquidity Provider</h2>
-        <div className="flex flex-col md:flex-row gap-8 justify-center items-stretch">
+        <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch">
           <div className="md:w-3/5">
             <PredictionMarketInfoLP />
           </div>

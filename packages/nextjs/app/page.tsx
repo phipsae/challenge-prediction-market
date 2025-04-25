@@ -14,12 +14,12 @@ const Prediction: NextPage = () => {
     <>
       <div className="p-4 lg:p-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="">
+          <div>
+            <OverviewBuySellShares />
+          </div>
+          <div>
             <PredictionMarketInfo />
             <Race />
-          </div>
-          <div className="">
-            <OverviewBuySellShares />
           </div>
         </div>
       </div>
