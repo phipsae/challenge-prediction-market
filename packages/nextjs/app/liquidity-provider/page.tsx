@@ -19,6 +19,9 @@ const LiquidityProvider: NextPage = () => {
         <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch">
           <div className="md:w-3/5">
             <PredictionMarketInfoLP />
+            <div className="mt-6">
+              <ResolveMarketAndWithdraw />
+            </div>
           </div>
           <div className="md:w-2/5">
             <div className="bg-base-100">
@@ -29,9 +32,6 @@ const LiquidityProvider: NextPage = () => {
                 </div>
                 <div>
                   <AddRemoveLiquidity />
-                </div>
-                <div>
-                  <ResolveMarketAndWithdraw />
                 </div>
               </div>
             </div>
