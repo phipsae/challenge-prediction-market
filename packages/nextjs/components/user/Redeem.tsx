@@ -20,17 +20,17 @@ export function Redeem() {
 
   if (isLoading)
     return (
-      <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
+      <div className="p-6 border-default">
         <h2 className="text-2xl font-bold text-center mb-4">Redeem Winning Tokens</h2>
-        <p className="text-base-content">Loading prediction market...</p>
+        <p className="text-center">Loading prediction market...</p>
       </div>
     );
 
   if (!prediction)
     return (
-      <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
+      <div className="p-6 border-default">
         <h2 className="text-2xl font-bold text-center mb-4">Redeem Winning Tokens</h2>
-        <p className="text-base-content">No prediction market found</p>
+        <p className="text-center">No prediction market found</p>
       </div>
     );
 
@@ -54,7 +54,7 @@ export function Redeem() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
+    <div className="p-6 border-default">
       <h2 className="text-2xl font-bold text-center mb-4">Redeem Winning Tokens</h2>
       {isReported && tokenAddress && winningOption && (
         <TokenBalance tokenAddress={tokenAddress as string} option={winningOption as string} redeem={true} />

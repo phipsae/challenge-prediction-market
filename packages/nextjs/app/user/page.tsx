@@ -1,13 +1,12 @@
 "use client";
 
 import type { NextPage } from "next";
-import { OracleAddress } from "~~/components/oracle/OracleAddress";
-import { ReportPrediction } from "~~/components/oracle/ReportPrediction";
 import Race from "~~/components/race/Race";
+import { OverviewBuySellShares } from "~~/components/user/OverviewBuySellShares";
 import { PredictionMarketInfo } from "~~/components/user/PredictionMarketInfo";
 import { useDeployedContractInfo, useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 
-const Oracle: NextPage = () => {
+const Prediction: NextPage = () => {
   const { data: deployedContract, isLoading: isDeployedContractLoading } = useDeployedContractInfo({
     contractName: "PredictionMarket",
   });
@@ -40,13 +39,10 @@ const Oracle: NextPage = () => {
 
   return (
     <>
-      <div className="p-4 md:p-10">
+      <div className="p-4 lg:p-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div>
-            <div className="p-6 border-default">
-              <OracleAddress />
-            </div>
-            <ReportPrediction />
+            <OverviewBuySellShares />
           </div>
           <div>
             <PredictionMarketInfo />
@@ -58,4 +54,4 @@ const Oracle: NextPage = () => {
   );
 };
 
-export default Oracle;
+export default Prediction;

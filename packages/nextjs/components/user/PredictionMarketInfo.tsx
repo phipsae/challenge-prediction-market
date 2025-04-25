@@ -31,21 +31,18 @@ export function PredictionMarketInfo() {
   const winningOption = winningToken === optionToken1 ? predictionOutcome1 : predictionOutcome2;
 
   return (
-    <div className="bg-base-100 p-6 box-border">
+    <div className="bg-base-100 p-6 border-default">
       <div className="space-y-6">
-        <div className="bg-base-200 p-4 rounded-lg">
+        <div className="bg-base-200 py-4 px-6 rounded-lg">
           <div className="flex justify-between items-center">
             <div>
               <p className="text-base-content text-xl font-bold">{question}</p>
-              <div className={`badge ${isReported ? "badge-success" : "badge-warning"}`}>
-                {isReported ? "Reported" : "Not Reported"}
-              </div>
             </div>
             <ProbabilityDisplay
               token1Reserve={BigInt(prediction?.[5] ?? 0)}
               token2Reserve={BigInt(prediction?.[6] ?? 0)}
               tokenAddress={optionToken1}
-              label="Chance"
+              label={isReported ? "Reported" : "Not Reported"}
               isReported={isReported}
               winningOption={winningOption}
             />

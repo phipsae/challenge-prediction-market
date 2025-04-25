@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { LPAddress } from "./LPAddress";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatEther } from "viem";
 import { useBlockNumber, useReadContract } from "wagmi";
@@ -40,7 +41,7 @@ export function PredictionMarketInfoLP() {
 
   if (!owner)
     return (
-      <div className="bg-base-100 p-6 box-border">
+      <div className="bg-base-100 p-6 border-default">
         <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
         <p className="text-base-content">No prediction market found</p>
       </div>
@@ -72,53 +73,55 @@ export function PredictionMarketInfoLP() {
   const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
   return (
-    <div className="bg-base-100">
-      <h2 className="text-2xl font-bold mb-6 text-left">Prediction Market Info for Liquidity Provider</h2>
+    <div className="">
+      <div className="grid grid-cols-1 md:grid-cols-2 border-default divide-x items-center">
+        <div className="p-6">
+          <h3 className="text-xl font-medium">
+            Token Value:{" "}
+            <span className="text-primary font-bold">
+              {Number(formatEther(BigInt(tokenValue ?? 0))).toFixed(4)} ETH
+            </span>
+          </h3>
+          <div className="text-sm">
+            {isReported ? `(Value of winning token "${winningOption}" in ETH)` : "(Value of winning token in ETH)"}
+          </div>
+        </div>
+        <div className="p-6">
+          <LPAddress />
+        </div>
+      </div>
 
-      <div className="space-y-10">
+      <div className="mt-6 space-y-6">
         <div className="">
-          <div className="stats shadow w-full rounded-lg">
-            <div className="stat text-left">
-              <div className="text-xl font-medium">Prediciton Market Collateral</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 border-default divide-x items-center">
+            <div className="p-6">
+              <h3 className="text-xl font-medium">Prediciton Market Collateral</h3>
               <span className="text-sm">(Amount of ETH that goes to the winning token)</span>
-              <div className="stat-value text-primary pt-2">
+              <div className="stat-value text-primary pt-2 font-semibold text-2xl md:text-3xl">
                 {Number(formatEther(BigInt(ethCollateral ?? 0))).toFixed(4)} ETH
               </div>
             </div>
-            <div className="stat text-left">
-              <div className="text-xl font-medium">LP Revenue</div>
+            <div className="p-6">
+              <h3 className="text-xl font-medium">LP Revenue</h3>
               <span className="text-sm">(Token revenue when token gets bought/sold)</span>
-              <div className="stat-value text-primary pt-2">
+              <div className="stat-value text-primary pt-2 font-semibold text-2xl md:text-3xl">
                 {Number(formatEther(BigInt(lpTradingRevenue ?? 0))).toFixed(4)} ETH
               </div>
             </div>
           </div>
         </div>
 
-        <div>
-          <div className="">
-            <div className="flex items-center gap-8">
-              <div>
-                <div className="text-xl font-medium">Token Value</div>
-                <div className="text-sm">
-                  {isReported
-                    ? `(Value of winning token "${winningOption}" in ETH)`
-                    : "(Value of winning token in ETH)"}
-                </div>
-              </div>
-              <div className="text-primary text-2xl font-bold">
-                {Number(formatEther(BigInt(tokenValue ?? 0))).toFixed(4)} ETH
-              </div>
-            </div>
-          </div>
-        </div>
-
         {!isReported ? (
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Yes Token */}
             <div className="bg-base-200 p-4 rounded-lg border-4 border-green-500">
               <h2 className="text-2xl font-semibold mb-2">&quot;{yesOutcome}&quot; Token</h2>
               <h3 className="text-lg mb-2">
+                Total Supply:
+                <span className="font-bold"> {Number(formatEther(BigInt(totalSupply ?? 0))).toFixed(2)} tokens</span>
+              </h3>
+
+              <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {yesOutcome} tokens <span className="font-bold">locked away by prediction market</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(yesTokenLocked))).toFixed(2)} tokens</div>
@@ -158,6 +161,11 @@ export function PredictionMarketInfoLP() {
             <div className="bg-base-200 p-4 rounded-lg border-4 border-red-500">
               <h2 className="text-2xl font-semibold mb-2">&quot;{noOutcome}&quot; Token</h2>
               <h3 className="text-lg mb-2">
+                Total Supply:
+                <span className="font-bold"> {Number(formatEther(BigInt(totalSupply ?? 0))).toFixed(2)} tokens</span>
+              </h3>
+
+              <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {noOutcome} tokens <span className="font-bold">locked away by prediction market</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(noTokenLocked))).toFixed(2)} tokens</div>

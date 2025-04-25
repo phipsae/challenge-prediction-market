@@ -19,7 +19,7 @@ export function LPAddress() {
   if (!owner)
     return (
       <div className="flex flex-col bg-base-100 p-4 rounded-xl">
-        <h2 className="text-2xl font-bold mb-6 text-center">Prediction Market Info</h2>
+        <h3 className="text-xl font-medium">Prediction Market Info</h3>
         <p className="text-base-content">No prediction market found</p>
       </div>
     );
@@ -29,10 +29,10 @@ export function LPAddress() {
   const isLp = lpAddress === address;
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      <h2 className="text-2xl font-bold text-center mb-4">Liquidity Provider</h2>
-      {!isLp && <span className="text-error">You are not the Liquidity Provider</span>}
+    <div className="">
+      <h3 className="text-xl font-medium">Liquidity Provider</h3>
       <Address address={lpAddress as `0x${string}`} />
+      {!isLp && <p className="mt-1 mb-0 text-error text-sm">You are not the Liquidity Provider</p>}
     </div>
   );
 }

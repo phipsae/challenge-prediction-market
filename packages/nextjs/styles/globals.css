@@ -4,7 +4,7 @@
 
 :root,
 [data-theme] {
-  background: oklch(var(--b1));
+  background: oklch(var(--b2));
 }
 
 body {
@@ -15,7 +15,6 @@ h1,
 h2,
 h3,
 h4 {
-  @apply font-lexend;
   margin-bottom: 0.5rem;
   line-height: 1;
 }
@@ -25,21 +24,9 @@ p {
 }
 
 .btn {
-  @apply rounded-md;
+  @apply shadow-md;
 }
 
 .btn.btn-ghost {
   @apply shadow-none;
-}
-
-.tooltip:before {
-  @apply bg-accent text-accent-content;
-}
-
-.tooltip:after {
-  @apply border-b-accent;
-}
-
-.box-border {
-  @apply rounded-lg border border-gray-200 dark:border-gray-500;
 }

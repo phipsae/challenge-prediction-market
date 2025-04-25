@@ -177,7 +177,7 @@ const RaceTrack: React.FC = () => {
   }, [raceStarted, raceFinished, startTime, RACE_DURATION, setElapsedTime, setCars, setRaceFinished, carSpeeds]);
 
   return (
-    <div className="bg-base-100 mt-6 p-6 box-border">
+    <div className="bg-base-100 mt-6 p-6 border-default">
       <div className="w-full max-w-4xl mx-auto relative">
         <div className="mb-6 flex justify-between items-center">
           <div className="text-xl font-bold">

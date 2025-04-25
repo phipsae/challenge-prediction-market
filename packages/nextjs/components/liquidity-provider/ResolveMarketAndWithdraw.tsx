@@ -24,9 +24,9 @@ export function ResolveMarketAndWithdraw() {
 
   if (!owner)
     return (
-      <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
+      <div className="p-6 border-default">
         <h2 className="text-2xl font-bold text-center mb-4">Resolve Market and Withdraw ETH</h2>
-        <p className="text-base-content">No prediction market found</p>
+        <p className="text-base-content text-center">No prediction market found</p>
       </div>
     );
 
@@ -39,7 +39,7 @@ export function ResolveMarketAndWithdraw() {
   const lpRevenue = prediction?.[12] ?? BigInt(0);
   const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
-  if (!isReported) return <></>;
+  if (!isReported) return null;
 
   const handleWithdraw = async () => {
     try {
@@ -52,9 +52,9 @@ export function ResolveMarketAndWithdraw() {
   };
 
   return (
-    <div className="max-w-lg mx-auto p-6 bg-base-100 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-4">Resolve Market and Withdraw ETH</h2>
-      <div className="flex flex-row gap-4 items-center">
+    <div className="p-6 border-default">
+      <h2 className="text-2xl font-bold text-center mb-5">Resolve Market and Withdraw ETH</h2>
+      <div className="flex flex-row gap-4 items-center justify-between">
         <LPFinalTokenBalance
           tokenAddress={winningToken as string}
           winningOption={winningOption}

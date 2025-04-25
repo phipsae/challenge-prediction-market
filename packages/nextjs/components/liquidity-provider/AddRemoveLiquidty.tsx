@@ -27,7 +27,7 @@ export function AddRemoveLiquidity() {
 
   if (!owner)
     return (
-      <div className="p-4 space-y-4 box-border">
+      <div className="p-4 space-y-4 border-default">
         <h2 className="text-lg font-semibold text-center">No prediction market found</h2>
       </div>
     );
@@ -44,7 +44,7 @@ export function AddRemoveLiquidity() {
 
   const isLiquidityProvider = address === prediction?.[13];
   return (
-    <div className="p-4 space-y-4 box-border">
+    <div className="p-4 space-y-4 border-default">
       {!isLiquidityProvider && (
         <p className="text-error text-center mb-4">Only the liquidity provider can add or remove liquidity</p>
       )}
@@ -60,7 +60,8 @@ export function AddRemoveLiquidity() {
               onChange={e => setInputBuyAmount(Number(e))}
               disabled={!isLiquidityProvider || isReported}
             />
-            {inputBuyAmount > 0 && `Adding ${(inputBuyAmount / Number(tokenValue)) * 10 ** 18} Yes and No tokens`}
+            {inputBuyAmount > 0 &&
+              `Adding Ξ ${inputBuyAmount} and ${((inputBuyAmount / Number(tokenValue)) * 10 ** 18).toFixed(4).replace(/\.?0+$/, "")} Yes and No tokens`}
             <button
               className={`btn btn-sm w-full btn-primary text-white`}
               disabled={!isLiquidityProvider || isReported}
@@ -92,7 +93,7 @@ export function AddRemoveLiquidity() {
               disabled={!isLiquidityProvider || isReported}
             />
             {inputSellAmount > 0 &&
-              `Removing ${(inputSellAmount / Number(tokenValue)) * 10 ** 18} 30 Yes and 30 No token`}
+              `Removing Ξ ${inputBuyAmount} and ${((inputSellAmount / Number(tokenValue)) * 10 ** 18).toFixed(4).replace(/\.?0+$/, "")} Yes and No token`}
             <div className="flex gap-2">
               <button
                 disabled={!isLiquidityProvider || isReported}
