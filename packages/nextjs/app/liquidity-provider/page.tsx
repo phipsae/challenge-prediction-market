@@ -18,9 +18,14 @@ const LiquidityProvider: NextPage = () => {
         <h2 className="text-2xl font-bold mb-6 text-left">Prediction Market Info for Liquidity Provider</h2>
         <div className="flex flex-col md:flex-row gap-6 justify-center items-stretch">
           <div className="md:w-3/5">
-            <PredictionMarketInfoLP />
+            <div>
+              <PredictionMarketInfoLP />
+            </div>
             <div className="mt-6">
               <ResolveMarketAndWithdraw />
+            </div>
+            <div>
+              <AddRemoveLiquidity />
             </div>
           </div>
           <div className="md:w-2/5">
@@ -29,9 +34,6 @@ const LiquidityProvider: NextPage = () => {
                 <div className="mb-6">
                   <PredictionMarketInfo />
                   <Race />
-                </div>
-                <div>
-                  <AddRemoveLiquidity />
                 </div>
               </div>
             </div>
