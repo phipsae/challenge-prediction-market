@@ -44,27 +44,21 @@ export function LPFinalTokenBalance({
 
   return (
     <div>
-      <div className="flex flex-row items-center gap-2">
-        <h3 className="text-lg text-center font-medium flex flex-col gap-1">
-          <div>
-            Redeemable &quot;{winningOption}&quot; Token Balance:{" "}
-            <span className="text-gray-700">{balance ? formatEther(balance) : "0"} tokens</span> worth{" "}
-            {tokenValue && balance ? formatEther((tokenValue * balance) / BigInt(10 ** 18)) : "0"} ETH
-          </div>
-          <div>
-            and LP Revenue:{" "}
-            <span className="text-gray-700">{lpRevenue ? Number(formatEther(lpRevenue)).toFixed(4) : "0"} ETH</span>
-            <br />
-            <strong>Withdraw in total:</strong>
-            {balance && tokenValue && lpRevenue
-              ? (
-                  Number(formatEther((tokenValue * balance) / BigInt(10 ** 18))) + Number(formatEther(lpRevenue))
-                ).toFixed(4)
-              : "0"}{" "}
-            ETH
-          </div>
-        </h3>
-      </div>
+      <p className="mt-0 mb-0">
+        Redeemable &quot;{winningOption}&quot; Token Balance: <br />
+        <span className="text-gray-700">{balance ? formatEther(balance) : "0"} tokens</span> worth{" "}
+        {tokenValue && balance ? formatEther((tokenValue * balance) / BigInt(10 ** 18)) : "0"} ETH
+      </p>
+      <p className="mt-4 mb-0">
+        LP Revenue:{" "}
+        <span className="text-gray-700">{lpRevenue ? Number(formatEther(lpRevenue)).toFixed(4) : "0"} ETH</span>
+        <br />
+        <strong>Withdraw in total: </strong>
+        {balance && tokenValue && lpRevenue
+          ? (Number(formatEther((tokenValue * balance) / BigInt(10 ** 18))) + Number(formatEther(lpRevenue))).toFixed(4)
+          : "0"}{" "}
+        ETH
+      </p>
     </div>
   );
 }
