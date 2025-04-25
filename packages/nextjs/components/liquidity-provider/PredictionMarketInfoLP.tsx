@@ -117,6 +117,11 @@ export function PredictionMarketInfoLP() {
             <div className="bg-base-200 p-4 rounded-lg border-4 border-green-500">
               <h2 className="text-2xl font-semibold mb-2">&quot;{yesOutcome}&quot; Token</h2>
               <h3 className="text-lg mb-2">
+                Total Supply:
+                <span className="font-bold"> {Number(formatEther(BigInt(totalSupply ?? 0))).toFixed(2)} tokens</span>
+              </h3>
+
+              <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {yesOutcome} tokens <span className="font-bold">locked away by prediction market</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(yesTokenLocked))).toFixed(2)} tokens</div>
@@ -156,6 +161,11 @@ export function PredictionMarketInfoLP() {
             <div className="bg-base-200 p-4 rounded-lg border-4 border-red-500">
               <h2 className="text-2xl font-semibold mb-2">&quot;{noOutcome}&quot; Token</h2>
               <h3 className="text-lg mb-2">
+                Total Supply:
+                <span className="font-bold"> {Number(formatEther(BigInt(totalSupply ?? 0))).toFixed(2)} tokens</span>
+              </h3>
+
+              <h3 className="text-lg mb-2 border-t-4 pt-2">
                 Amount of {noOutcome} tokens <span className="font-bold">locked away by prediction market</span>
               </h3>
               <div className="stat-value text-lg">{Number(formatEther(BigInt(noTokenLocked))).toFixed(2)} tokens</div>
