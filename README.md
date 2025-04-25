@@ -4,17 +4,17 @@
 
 ## Introduction
 
-Prediction markets have been around for a long time, with records of **election betting on Wall Street dating back to 1884** (see [this Wikipedia page](https://en.wikipedia.org/wiki/Prediction_market)). On **Ethereum**, they’ve been a topic of interest for quite some time, but they never really took off, until now.
+Prediction markets have been around for a long time, with records of **election betting on Wall Street dating back to 1884** (see [this Wikipedia page](https://en.wikipedia.org/wiki/Prediction_market)). On **Ethereum**, they've been a topic of interest for quite some time, but they never really took off, until now.
 
 Polymarket, a prediction market, is one of the most widely used blockchain applications today by both crypto natives and everyday users. It gained especially significant traction around the **U.S. elections.**
 
 For example, during the **2024 U.S. Presidential Election**, Polymarket saw over **$3.3 billion** wagered on the race between **Donald Trump and Kamala Harris** (as of November 5, 2024). [[Source](https://en.wikipedia.org/wiki/Polymarket)]
 
-At its core, a prediction market is a **betting market** where users can wager on the outcome of a future event with a **fixed end date**. The key difference from ltraditional betting platforms is that, in most cases, **once you place a bet, you're locked in**. But in a **prediction market**, you can **sell your position** before the event concludes.
+At its core, a prediction market is a **betting market** where users can wager on the outcome of a future event with a **fixed end date**. The key difference from traditional betting platforms is that, in most cases, **once you place a bet, you're locked in**. But in a **prediction market**, you can **sell your position** before the event concludes.
 
 The more people bet on a particular outcome, the **more expensive** that side becomes, while the opposite side gets **cheaper**. This **dynamic pricing mechanism** determines an implied **probability**, which can sometimes be more accurate than expert opinions, polls, or pundits.
 
-In this tutorial, we'll guide you through the fundamental Solidity functions and explore how a fully on-chain prediction market could be structured. Our focus will be on trading and liquidity provision. This decentralized prediction market enables anyone to place bets on a predefined question with the two outcomes “Yes” or “No”.
+In this tutorial, we'll guide you through the fundamental Solidity functions and explore how a fully on-chain prediction market could be structured. Our focus will be on trading and liquidity provision. This decentralized prediction market enables anyone to place bets on a predefined question with the two outcomes "Yes" or "No".
 
 ## Functioning of our prediction market
 
@@ -24,7 +24,7 @@ In our prediction market, users can bet on the outcome of a race between a green
 
 This is a **binary prediction market** with two outcome tokens: **"Yes"** and **"No."** A winning share is worth **0.01 ETH**, while the losing share is worth **0 ETH**. Before the outcome is known, token prices fluctuate between **0 and 0.01 ETH**, reflecting the perceived probability. The combined price of both tokens always equals **0.01 ETH,** similar to Polymarket, where a winning share is worth **1 USDC**. A fundamental rule in such markets is that **the combined price of both shares ("Yes" and "No") always equals the winning share value.**
 
-Unlike traditional betting markets that lock users into their positions, our market lets **user trade** **outcome shares any time**. While platforms like Polymarket use order books, we use an **Automated Market Maker (AMM)**, enabling users buy or sell shares without needing a counterparty to sell or buy to (and it’s easier to implement and less gas-intensive).
+Unlike traditional betting markets that lock users into their positions, our market lets **users trade** **outcome shares any time**. While platforms like Polymarket use order books, we use an **Automated Market Maker (AMM)**, enabling users buy or sell shares without needing a counterparty to sell or buy to (and it's easier to implement and less gas-intensive).
 
 To create a market, **liquidity must be provided upfront** so that both outcome tokens are backed by collateral. Liquidity providers bear risk, as losing tokens become worthless, but they earn **trading fees** in return. Therefore, it is important that the market attract **active trading and user interest**. That is one of the reasons why on platforms, like Polymarket, market creation is curated by the team and community (see their [docs](https://learn.polymarket.com/docs/guides/get-started/what-is-polymarket/)).
 
@@ -37,7 +37,7 @@ But now enough explanation, let's jump into the challenge.
 Before you begin, you need to install the following tools:
 
 - [Node (v18 LTS)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
+- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
 - [Git](https://git-scm.com/downloads)
 
 Then download the challenge to your computer and install dependencies by running:
@@ -67,13 +67,13 @@ cd challenge-6-prediction-market
 yarn start
 ```
 
-📱 Open [http://localhost:3000](http://localhost:3000/) to see the app.
+📱 Open [http://localhost:3000](http://localhost:3000/) to see the app.
 
-> 👩‍💻 Rerun yarn deploy whenever you want to deploy new contracts to the frontend. If you haven't made any contract changes, you can run yarn deploy --reset for a completely fresh deploy.
+> 👩‍💻 Rerun yarn deploy whenever you want to deploy new contracts to the frontend. If you haven't made any contract changes, you can run yarn deploy --reset for a completely fresh deploy.
 
-Head to the **`Debug Contracts`** tab and you should find a smart contract named **`PredictionMarket`**. This is our main contract and the one we’ll be working on throughout the challenge. Since we haven’t implemented any functions yet, they all shouldn’t work neither do you see all necessary state variables.
+Head to the **`Debug Contracts`** tab and you should find a smart contract named **`PredictionMarket`**. This is our main contract and the one we'll be working on throughout the challenge. Since we haven't implemented any functions yet, they all shouldn't work neither do you see all necessary state variables.
 
-> 🏎️ 🏁 Since we want to build a prediction market around our car race head to the `User` tab and it! (The race is entirely separate and has no impact on the smart contract.)
+> 🏎️ 🏁 Since we want to build a prediction market around our car race head to the `User` tab and it! (The race is entirely separate and has no impact on the smart contract.)
 
 ## **Checkpoint 1: 🔭 The Structure of the protocol 📺**
 
@@ -83,17 +83,17 @@ A fully on-chain prediction market generally consists of three key components:
 - Trading and liquidity provision mechanism (AMM, order book, etc.)
 - Oracle
 
-Our contract uses ERC20 tokens, which are deployed whenever we deploy our prediction market. It generates two ERC20 token contracts, representing the possible outcomes, “Yes” and “No”.
+Our contract uses ERC20 tokens, which are deployed whenever we deploy our prediction market. It generates two ERC20 token contracts, representing the possible outcomes, "Yes" and "No".
 
 These tokens are defined in `packages/hardhat/contracts/PredictionMarketToken.sol`, which extends the standard ERC20 with custom minting and burning logic. We've also implemented a restriction that prevents the prediction market owner from transferring tokens (the reason will be explained later). Go ahead and review that contract first.
 
-The main contract `PredictionMarket.sol` we’ll build during this challenge is at `packages/hardhat/contracts/PredictionMarket.sol`. Our prediction market involves the three key roles:
+The main contract `PredictionMarket.sol` we'll build during this challenge is at `packages/hardhat/contracts/PredictionMarket.sol`. Our prediction market involves the three key roles:
 
 1. **Prediction Market Owner & Liquidity Provider** – sets up and funds the market
 2. **Oracle** – reports the final outcome of the prediction
 3. **User** – places bets on outcomes to win ETH
 
-In this challenge, you’ll take on all three roles. But we’ll begin with the **market owner and** **liquidity provider**, since without them, the market can’t exist.
+In this challenge, you'll take on all three roles. But we'll begin with the **market owner and** **liquidity provider**, since without them, the market can't exist.
 
 In an AMM system, initial liquidity is essential. **When a new prediction market is created, our prediction market creator acts as the liquidity provide**r. It deposits ETH as collateral, and in return, the protocol creates the two token contracts "Yes" and "No" and mints tokens accordingly. Additionally, the liquidity provider can also add or remove liquidity. In **Checkpoints 2 to 4 and 6**, you'll implement the logic needed to complete the Liquidity Provider functionalities under the `Liquidity Provider` tab
 
@@ -101,7 +101,7 @@ In an AMM system, initial liquidity is essential. **When a new prediction market
 
 ![ch-6-lp1](packages/nextjs/public/lp1.png)
 
-In **Checkpoint 5**, you’ll bring the Oracle to life by implementing the logic for outcome reporting.
+In **Checkpoint 5**, you'll bring the Oracle to life by implementing the logic for outcome reporting.
 
 ![ch-6-oracle1](packages/nextjs/public/oracle1.png)
 
@@ -109,11 +109,11 @@ Finally, in **Checkpoints 7 to 9**, we shift our focus to the User, where you'll
 
 ![ch-6-user1](packages/nextjs/public/user1.png)
 
-> 🎉 You've made it this far in Scaffold-Eth Challenges 👏🏼 . As things get more complex, it might be good to review the design requirements of the challenge first! Check out the empty PredictionMarket.sol file to see aspects of each function. If you can explain how each function will work with one another, that's great! 😎
+> 🎉 You've made it this far in Scaffold-Eth Challenges 👏🏼 . As things get more complex, it might be good to review the design requirements of the challenge first! Check out the empty PredictionMarket.sol file to see aspects of each function. If you can explain how each function will work with one another, that's great! 😎
 
-> 🚨 🚨 🦈 The Guiding Questions will lead you in the right direction, but try thinking about how you would structure each function before looking at these!
+> 🚨 🚨 🦈 The Guiding Questions will lead you in the right direction, but try thinking about how you would structure each function before looking at these!
 
-> 🚨 🚨 🦖 The code blobs within the toggles in the Guiding Questions are some examples of what you can use, but try writing the implementation code for the functions first!
+> 🚨 🚨 🦖 The code blobs within the toggles in the Guiding Questions are some examples of what you can use, but try writing the implementation code for the functions first!
 
 ## **Checkpoint 2: 🔭 The Prediction Market Setup 🏠**
 
@@ -124,8 +124,8 @@ Parameters we want to declare:
 - `*_*oracle`: the address of the **oracle**
 - `_question`: the **question** posed by the prediction market
 - `_initialTokenValue`: defines how much each token is worth in case of winning (0.01 ETH)
-- `_initialYesProbability`: the starting probability of the “Yes” outcome (e.g., 50%)
-- `_percentageToLock`: a value used in calculating both the probability and the token price (you’ll explore this further in Checkpoint 3)
+- `_initialYesProbability`: the starting probability of the "Yes" outcome (e.g., 50%)
+- `_percentageToLock`: a value used in calculating both the probability and the token price (you'll explore this further in Checkpoint 3)
 
 And additional state variables we want to create:
 
@@ -134,11 +134,11 @@ And additional state variables we want to create:
 
 > ❗️For easier testing, we set the oracle address to be the same as the liquidity provider during deployment (see `00_deploy_your_contract.ts`).
 
-> ⏰ 🚨 In a prediction market in production, you would typically include a time-based restriction, a **fixed end date** to ensure that outcomes can only be reported after the predicted event occurs. For simplicity and ease of testing, we omit this time component in this implementation.
+> ⏰ 🚨 In a prediction market in production, you would typically include a time-based restriction, a **fixed end date** to ensure that outcomes can only be reported after the predicted event occurs. For simplicity and ease of testing, we omit this time component in this implementation.
 
 > 💡 `i_<variableName>` indicates an immutable variable, whereas `s_<variableName>` is a normal state variable that can be modified.
 
-Alright, let’s head to the contract and start setting up our state variables and the first part of the constructor. Consider implementing important conditional checks.
+Alright, let's head to the contract and start setting up our state variables and the first part of the constructor. Consider implementing important conditional checks.
 
 <details markdown='1'><summary>🦉 Guiding Questions</summary>
 
@@ -237,11 +237,11 @@ Run the following command to check if you implement all variable and checks corr
 yarn test --grep "Checkpoint2"
 ```
 
-> 🚨 Before we deploy the contract we need to finish implementing the constructor in the next checkpoint 3.
+> 🚨 Before we deploy the contract we need to finish implementing the constructor in the next checkpoint 3.
 
-## **Checkpoint 3: 🔨🪙  Mint the tokens**
+## **Checkpoint 3: 🔨🪙 Mint the tokens**
 
-When deploying the prediction market contract, we also need to deploy the associated **“Yes”** and **“No”** token contracts. To ensure this happens, we instantiate both token contracts inside the constructor.
+When deploying the prediction market contract, we also need to deploy the associated **"Yes"** and **"No"** token contracts. To ensure this happens, we instantiate both token contracts inside the constructor.
 
 To deploy them correctly, we must provide the required parameters, as defined in `PredictionMarketToken.sol`. The first three are straightforward:
 
@@ -253,21 +253,21 @@ The fourth parameter is the **initial token supply** to mint. Therefor, we divid
 
 We store the two deployed token contract addresses in the state variables `i_yesToken` and `i_noToken`.
 
-As the market creator, you’ll also choose the **initial probability** of the “Yes” outcome via the variable `i_initialYesProbability`. For example, if you believe the green car has a better chance of winning the race, you might set this to **60%** upfront.
+As the market creator, you'll also choose the **initial probability** of the "Yes" outcome via the variable `i_initialYesProbability`. For example, if you believe the green car has a better chance of winning the race, you might set this to **60%** upfront.
 
-To understand how this works, let’s walk through an example:
+To understand how this works, let's walk through an example:
 
-Suppose we mint 100 “Yes” and 100 “No” tokens. If users buy 60 “Yes” and 40 “No” tokens, the implied probability of “Yes” is:
+Suppose we mint 100 "Yes" and 100 "No" tokens. If users buy 60 "Yes" and 40 "No" tokens, the implied probability of "Yes" is:
 
-Suppose we mint 100 “Yes” and 100 “No” tokens. If users buy 60 “Yes” and 40 “No” tokens, the implied probability of “Yes” is:
+Suppose we mint 100 "Yes" and 100 "No" tokens. If users buy 60 "Yes" and 40 "No" tokens, the implied probability of "Yes" is:
 
 $$yesProbability = \frac{yesTokenSold}{yesTokenSold + noTokenSold} = \frac{60}{60 + 40} = 60\%$$
 
-And accordingly the “No” probability is 40%.
+And accordingly the "No" probability is 40%.
 
 To set an initial probability before any trades occur, we use a **token lock mechanism**. Locked tokens act as if they were already sold. In deployment these tokens are sent to the liquidity provider but are non-transferable (see `PredictionMarketToken.sol`).
 
-To control this, we introduce the `i_percentageLocked` variable. For example, if we lock **10%** of the total supply and want to set the initial “Yes” probability to **60%**, the locked token amounts would be:
+To control this, we introduce the `i_percentageLocked` variable. For example, if we lock **10%** of the total supply and want to set the initial "Yes" probability to **60%**, the locked token amounts would be:
 
 $$amountToLock = initialTokenAmount * probabilty * percentageToLock * 2 $$
 
@@ -283,13 +283,13 @@ Therefor the initial probability is:
 
 $$\frac{12}{12 + 8} = 60\%$$
 
-And therefor, after deployment, **88 “Yes”** and **92 “No”** tokens are available for trading (since 12 “Yes” and 8 “No” tokens will be locked).
+And therefor, after deployment, 88 "Yes" and 92 "No" tokens are available for trading (since 12 "Yes" and 8 "No" tokens will be locked).
 
 The locking of tokens serves two purposes:
 
 1. **Stabilizes** the initial market, preventing extreme shifts from early trades.
 
-   Without it, a single “Yes” purchase pushes the probability to 100%:
+   Without it, a single "Yes" purchase pushes the probability to 100%:
 
    $$\frac{1}{1 + 0} = 100\%$$
 
@@ -297,25 +297,25 @@ The locking of tokens serves two purposes:
 
    $$tokenPrice = i_initialTokenValue * marketProbability$$
 
-> 💡 The percentage can be chosen arbitrarily, it depends on how you want to set up the prediction market. The more you lock from the beginning the lesser are the price swings but also there is less liquidity to trade.
+> 💡 The percentage can be chosen arbitrarily, it depends on how you want to set up the prediction market. The more you lock from the beginning the lesser are the price swings but also there is less liquidity to trade.
 
 <details markdown='1'><summary>🦉 Guiding Questions</summary>
 
 <details markdown='1'><summary>Question 1</summary>
 
-> How do we calculate the correct initialTokenAmount for each token? (Hint: Don’t forget to use the PRECISION constant to handle decimal values properly, as Solidity does not support floating-point arithmetic)
+> How do we calculate the correct initialTokenAmount for each token? (Hint: Don't forget to use the PRECISION constant to handle decimal values properly, as Solidity does not support floating-point arithmetic)
 
 </details>
 
 <details markdown='1'><summary>Question 2</summary>
 
-> How can we create the two token contracts for “Yes” and “No” outcomes and mint the correct amount of tokens for each? (Hint: Take a look at the PredictionMarketToken.sol contract for guidance.)
+> How can we create the two token contracts for "Yes" and "No" outcomes and mint the correct amount of tokens for each? (Hint: Take a look at the PredictionMarketToken.sol contract for guidance.)
 
 </details>
 
 <details markdown='1'><summary>Question 3</summary>
 
-> After minting the correct amount of tokens, how do we ensure that the appropriate portion is locked away to reflect the initial probability set by the prediction market? How can we correctly transfer these locked tokens to the contract owner’s address?
+> After minting the correct amount of tokens, how do we ensure that the appropriate portion is locked away to reflect the initial probability set by the prediction market? How can we correctly transfer these locked tokens to the contract owner's address?
 
 </details>
 
@@ -392,7 +392,7 @@ Run the following command to check if you implement all variable and checks corr
 yarn test --grep "Checkpoint3"
 ```
 
-If your tests have passed, you're almost there! There is one little thing we need to do before deploying the contract. Please scroll down to the `getPrediction` function and uncomment everything below `/// CHECKPOINT 3 ///`. We use this getter to display the contract's state variables on the front end (ignore the warning “Unused function parameter” for isReported and winningToken for now).
+If your tests have passed, you're almost there! There is one little thing we need to do before deploying the contract. Please scroll down to the `getPrediction` function and uncomment everything below `/// CHECKPOINT 3 ///`. We use this getter to display the contract's state variables on the front end (ignore the warning "Unused function parameter" for isReported and winningToken for now).
 
 Once that's done, you're ready to deploy!
 
@@ -491,23 +491,23 @@ function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner predictionNo
 
 </details>
 
-## **Checkpoint 5: 🔮 Let the oracle report**
+## **Checkpoint 5: 🔮 Let the oracle report**
 
 Ethereum is inherently isolated from the off-chain world to ensure data integrity and prevent tampering. To bridge this gap, **oracles** are used to bring external data on-chain.
 
-The concept is simple: an oracle calls a smart contract’s write function, supplying off-chain values via calldata. In our case, reporting the outcome of our race on-chain, so that the contract know which car has won.
+The concept is simple: an oracle calls a smart contract's write function, supplying off-chain values via calldata. In our case, reporting the outcome of our race on-chain, so that the contract know which car has won.
 
 The main challenge is ensuring the **accuracy and trustworthiness** of the reported data. How do we verify the result and incentivize honest reporting?
 
 To address this, several oracle solutions exist. Optimistic oracles, like UMA (used by platforms such as Polymarket), assume data is correct unless disputed. Alternatively, decentralized oracle networks like Chainlink aggregate data from multiple sources to increase reliability.
 
-However, for the purposes of this project, we don’t go further into oracles and simplify it. We assume the **prediction market owner acts as a trusted oracle and will report the outcome of the race directly.** A write function allows them to set the outcome as “Yes” or “No”.
+However, for the purposes of this project, we don't go further into oracles and simplify it. We assume the **prediction market owner acts as a trusted oracle and will report the outcome of the race directly.** A write function allows them to set the outcome as "Yes" or "No".
 
-We introduce `s_winningToken` to store the winner’s token contract address and `s_isReported` to indicate if the market is resolved. Once `report` is called, `s_isReported` is set to `true`. This state can be used to restrict access to certain functions after the market is resolved.
+We introduce `s_winningToken` to store the winner's token contract address and `s_isReported` to indicate if the market is resolved. Once `report` is called, `s_isReported` is set to `true`. This state can be used to restrict access to certain functions after the market is resolved.
 
 Therefor we want to create a custom modifier `predictionNotReported` which we could use to ensure that some functions can only be executed while the market is active and add it the function `report`. So we prevent that the function can be called a second time.
 
-> 💡 When using an **enum as a parameter**, there's no way to validate it with a **custom error**. Any invalid value will cause an **immediate revert**.
+> 💡 When using an **enum as a parameter**, there's no way to validate it with a **custom error**. Any invalid value will cause an **immediate revert**.
 
 <details markdown='1'><summary>🦉 Guiding Questions</summary>
 
@@ -585,17 +585,17 @@ yarn test --grep "Checkpoint5"
 
 There's one small step left, since we've added new state variables that need to be displayed on the front end, please go to the `getPrediction` getter function and uncomment the last two lines.
 
-Now you could head over to the oracle tab in the UI and report the outcome (after you watched the race of course:)) 🏎️ 🏁
+Now you could head over to the oracle tab in the UI and report the outcome (after you watched the race of course:)) 🏎️ 🏁
 
-> 💡 Make sure you're connected with the correct oracle address — check `00_deploy_your_contract.ts` to find out which one is being used.
+> 💡 Make sure you're connected with the correct oracle address — check `00_deploy_your_contract.ts` to find out which one is being used.
 
 ![ch-6-oracle2](packages/nextjs/public/oracle2.png)
 
-## **Checkpoint 6: 📉💧 Resolve market and withdraw liquidity and trading revenue**
+## **Checkpoint 6: 📉💧 Resolve market and withdraw liquidity and trading revenue**
 
 Now that the oracle is successfully integrated, the next step is to ensure the prediction market owner can **resolve the market** once the outcome has been reported. After resolving, the owner should be able to **withdraw the remaining collateral** by redeeming the winning tokens for ETH and collecting the accumulated trading revenue.
 
-To accomplish this, we’ll implement the `resolveMarketAndWithdraw` function. Since you now have a solid understanding of the contract’s structure, go ahead and write this function and don’t forget to include the necessary **conditional checks**.
+To accomplish this, we'll implement the `resolveMarketAndWithdraw` function. Since you now have a solid understanding of the contract's structure, go ahead and write this function and don't forget to include the necessary **conditional checks**.
 
 <details markdown='1'><summary>🦉 Guiding Questions</summary>
 
@@ -616,7 +616,7 @@ To accomplish this, we’ll implement the `resolveMarketAndWithdraw` function. S
 
 <details markdown='1'><summary>Question 3</summary>
 
-> What should happen to the winning tokens after they’re redeemed?
+> What should happen to the winning tokens after they're redeemed?
 
 </details>
 
@@ -690,15 +690,15 @@ Make sure to redeploy the contract and report again in the Oracle tab. Then, hea
 
 Now that we've successfully integrated both the **liquidity provider** and the **oracle**, the next step is to enable users to **buy and sell tokens**, allowing them to bet on the outcome of the prediction market.
 
-Ready? Let’s go!
+Ready? Let's go!
 
 ## **Checkpoint 7: 📈📉 Implement pricing and probability calculations for token trades**
 
-Let’s move on to the next step in building your prediction market challenge! You’ve already integrated the liquidity provider and oracle components, nice job! 🎉
+Let's move on to the next step in building your prediction market challenge! You've already integrated the liquidity provider and oracle components, nice job! 🎉
 
-Now, the goal is to allow users to **buy and sell “Yes” or “No” tokens** to bet on market outcomes.
+Now, the goal is to allow users to **buy and sell "Yes" or "No" tokens** to bet on market outcomes.
 
-To do that, we’ll first implement three helper functions:
+To do that, we'll first implement three helper functions:
 
 - `_calculatePriceInEth`
 - `_getCurrentReserves`
@@ -709,13 +709,13 @@ And then finishing up with:
 - `getBuyPriceInEth`
 - `getSellPriceInEth`
 
-Among these, the most critical is `_calculatePriceInEth`. Every time a user buys or sells a token, this function determines the ETH amount they need to pay (or receive). For simplicity, we’ll use a **linear pricing model.**You can always swap this out later for something more advanced, like a logarithmic pricing mechanism (outside the scope of this challenge).
+Among these, the most critical is `_calculatePriceInEth`. Every time a user buys or sells a token, this function determines the ETH amount they need to pay (or receive). For simplicity, we'll use a **linear pricing model.**You can always swap this out later for something more advanced, like a logarithmic pricing mechanism (outside the scope of this challenge).
 
 Check out the table below for how prices behave under different scenarios. Note that the prices of both outcomes always sum to **0.01 ETH**.
 
 ![ch-6-priceTable](packages/nextjs/public/priceTable.png)
 
-To implement `_calculatePriceInEth`, we’ll rely on `_getCurrentReserves`, which returns the number of tokens held in the contract for both outcomes, `currentTokenReserve` and `currentOtherTokenReserve`. These reserves help us determine how many tokens have already been sold (when subtracted from total supply).
+To implement `_calculatePriceInEth`, we'll rely on `_getCurrentReserves`, which returns the number of tokens held in the contract for both outcomes, `currentTokenReserve` and `currentOtherTokenReserve`. These reserves help us determine how many tokens have already been sold (when subtracted from total supply).
 
 Next, we calculate the prediction market probability using `_calculateProbability` both **before** and **after** the trade. We then take the **average** of those two values (`probabilityAvg`) to compute the final price using the following formula:
 
@@ -723,7 +723,7 @@ $$price = i_initialTokenValue * probabilityAvg * _tradingAmount$$
 
 This pricing mechanism gives users a **volume discount,** the opposite of slippage in DeFi, where typically larger trades get more expensive. 🙂
 
-Let’s walk through an example, which will also help you to understand the price calculation and makes it easier for you to solve the checkpoint.
+Let's walk through an example, which will also help you to understand the price calculation and makes it easier for you to solve the checkpoint.
 
 - totalSupplyYes = 100, totalSupplyNo = 100
 - currentReserveYes = 90, currentReserveNo = 90
@@ -758,7 +758,7 @@ $$
 
 > 🧠 **So, why do two smaller trades cost more than one big trade?**
 >
-> This happens because we’re using the **average probability** between the start and end of a trade to calculate the price. When you split a large trade into multiple smaller ones, each one recalculates its own start and end probability, resulting in **higher average probabilities overall**, in a rising market. That’s why the total cost ends up being **more**.
+> This happens because we're using the **average probability** between the start and end of a trade to calculate the price. When you split a large trade into multiple smaller ones, each one recalculates its own start and end probability, resulting in **higher average probabilities overall**, in a rising market. That's why the total cost ends up being **more**.
 >
 > This behavior is a side-effect of using a simplified, linear approximation. If we wanted to make the pricing model **more accurate**, we could simulate the trade as a **series of infinitesimally small steps**, like how an **integral** works in calculus. That would give us a smoother, more precise cost curve for large trades, but at the expense of complexity.
 
@@ -782,7 +782,7 @@ $$
 
 <details markdown='1'><summary>Question 2</summary>
 
-> What check should you add to avoid underflow when selling tokens? (Hint: Ensure the user isn’t selling more tokens than are available in reserves.)
+> What check should you add to avoid underflow when selling tokens? (Hint: Ensure the user isn't selling more tokens than are available in reserves.)
 
 </details>
 
@@ -794,7 +794,7 @@ $$
 
 <details markdown='1'><summary>Question 4</summary>
 
-> What else should you keep in mind when calculating price? (Hint: Don’t forget about decimals andPRECISION constant.)
+> What else should you keep in mind when calculating price? (Hint: Don't forget about decimals andPRECISION constant.)
 
 </details>
 
@@ -889,7 +889,7 @@ Run the following command to check if you implemented all the functions correctl
 yarn test --grep "Checkpoint7"
 ```
 
-## **Checkpoint 8: 🔁💰 Buy and sell “Yes” or “No” Tokens for ETH**
+## **Checkpoint 8: 🔁💰 Buy and sell "Yes" or "No" Tokens for ETH**
 
 With the `getBuyPriceInEth` and `getSellPriceInEth` functions ready, we can now implement `buyTokensWithETH` and `sellTokensForEth`, starting with `buyTokensWithETH`.
 
@@ -908,7 +908,7 @@ The `sellTokensForEth` function follows a similar process but in reverse. Here, 
 - Confirm the contract has enough ETH to cover the payout
 - Check that the user has approved the contract to transfer their tokens
 
-The ETH amount owed is calculated using `getSellPriceInEth`. Once validated, we deduct the ETH from `s_lpTradingRevenue` and transfer it to the user. Don’t forget to emit the respective events.
+The ETH amount owed is calculated using `getSellPriceInEth`. Once validated, we deduct the ETH from `s_lpTradingRevenue` and transfer it to the user. Don't forget to emit the respective events.
 
 <details markdown='1'><summary>🦉 Guiding Questions</summary>
 
@@ -1062,7 +1062,7 @@ yarn test --grep "Checkpoint8"
 
 And then run `yarn deploy` to test it in the front end and see how the probability changes.
 
-> 💡 Make sure you use another account as the liquidity provider, otherwise you are restricted from selling the tokens
+> 💡 Make sure you use another account as the liquidity provider, otherwise you are restricted from selling the tokens
 
 ![ch-6-user2](packages/nextjs/public/user2.png)
 
@@ -1159,92 +1159,86 @@ Congratulations you finished successfully the implementation 🎉🎉🎉
 
 ## **Checkpoint 10: 💾 Deploy your contracts! 🛰**
 
-📡 Edit the `defaultNetwork` to [your choice of public EVM networks](https://ethereum.org/en/developers/docs/networks/) in `packages/hardhat/hardhat.config.ts`
+📡 Edit the `defaultNetwork` to [your choice of public EVM networks](https://ethereum.org/en/developers/docs/networks/) in `packages/hardhat/hardhat.config.ts`
 
-🔐 You will need to generate a **deployer address** using `yarn generate` This creates a mnemonic and saves it locally.
+🔐 You will need to generate a **deployer address** using `yarn generate` This creates a mnemonic and saves it locally.
 
-👩‍🚀 Use `yarn account` to view your deployer account balances.
+👩‍🚀 Use `yarn account` to view your deployer account balances.
 
-⛽️ You will need to send ETH to your **deployer address** with your wallet, or get it from a public faucet of your chosen network.
+⛽️ You will need to send ETH to your **deployer address** with your wallet, or obtain it from a public faucet of your chosen network.
 
-> 🚨🚨 **!!!Warning!!!** Before deploying, make sure to adjust the ETH amount in the constructor to suit your preferences. By default, the contract deploys with **1 ETH** and sets the token value to **0.01 ETH**. You might want to change this, for example, to **0.1 ETH** and **0.001 ETH,** depending on how much ETH you’re willing to allocate. 🚨🚨
+> 🚨🚨 **!!!Warning!!!** Before deploying, make sure to adjust the ETH amount in the constructor to suit your preferences. By default, the contract deploys with **1 ETH** and sets the token value to **0.01 ETH**. You might want to change this, for example, to **0.1 ETH** and **0.001 ETH,** depending on how much ETH you're willing to allocate. 🚨🚨
 
-🚀 Run `yarn deploy` to deploy your smart contract to a public network (selected in `hardhat.config.ts`)
+🚀 Run `yarn deploy` to deploy your smart contract to a public network (selected in `hardhat.config.ts`)
 
-> 💬 Hint: You can set the defaultNetwork in hardhat.config.ts to sepolia or optimismSepolia OR you can yarn deploy --network sepolia or yarn deploy --network optimismSepolia.
+> 💬 Hint: You can set the `defaultNetwork` in hardhat.config.ts to sepolia or optimismSepolia OR you can yarn deploy --network sepolia or yarn deploy --network optimismSepolia.
 
-## **Checkpoint 11: 🚢 Ship your frontend! 🚁**
+💻 View your frontend at [http://localhost:3000](http://localhost:3000/) and verify you see the correct network.
 
-✏️ Edit your frontend config in `packages/nextjs/scaffold.config.ts` to change the `targetNetwork` to `chains.sepolia` (or `chains.optimismSepolia` if you deployed to OP Sepolia)
+📦 Run `yarn vercel` to package up your frontend and deploy.
 
-💻 View your frontend at [http://localhost:3000](http://localhost:3000/) and verify you see the correct network.
+> You might need to log in to Vercel first by running yarn vercel:login. Once you log in (via email, GitHub, etc.), the default options should work.
 
-📡 When you are ready to ship the frontend app...
-
-📦 Run `yarn vercel` to package up your frontend and deploy.
-
-> You might need to log in to Vercel first by running yarn vercel:login. Once you log in (email, GitHub, etc), the default options should work.
-
-> If you want to redeploy to the same production URL you can run yarn vercel --prod. If you omit the --prod flag it will deploy it to a preview/test URL.
+> If you want to redeploy to the same production URL you can run yarn vercel --prod. If you omit the `--prod` flag it will deploy it to a preview/test URL.
 
 > Follow the steps to deploy to Vercel. It'll give you a public URL.
 
-> 🦊 Since we have deployed to a public testnet, you will now need to connect using a wallet you own or use a burner wallet. By default 🔥 burner wallet's are only available on hardhat . You can enable them on every chain by setting onlyLocalBurnerWallet: false in your frontend config (scaffold.config.ts in packages/nextjs/)
+> 🦊 Since we have deployed to a public testnet, you will now need to connect using a wallet you own or use a burner wallet. By default 🔥 burner wallet's are only available on hardhat. You can enable them on every chain by setting onlyLocalBurnerWallet: false in your frontend config (scaffold.config.ts in packages/nextjs/)
 
 **Configuration of Third-Party Services for Production-Grade Apps.**
 
-By default, 🏗 Scaffold-ETH 2 provides predefined API keys for popular services such as Alchemy and Etherscan. This allows you to begin developing and testing your applications more easily, avoiding the need to register for these services. This is great to complete your **SpeedRunEthereum**.
+By default, 🏗 Scaffold-ETH 2 provides predefined API keys for popular services such as Alchemy and Etherscan. This allows you to begin developing and testing your applications more easily, avoiding the need to register for these services. This is great to complete your **SpeedRunEthereum**.
 
 For production-grade applications, it's recommended to obtain your own API keys (to prevent rate limiting issues). You can configure these at:
 
-- 🔷`ALCHEMY_API_KEY` variable in `packages/hardhat/.env` and `packages/nextjs/.env.local`. You can create API keys from the [Alchemy dashboard](https://dashboard.alchemy.com/).
-- 📃`ETHERSCAN_API_KEY` variable in `packages/hardhat/.env` with your generated API key. You can get your key [here](https://etherscan.io/myapikey).
+- 🔷`ALCHEMY_API_KEY` variable in `packages/hardhat/.env` and `packages/nextjs/.env.local`. You can create API keys from the [Alchemy dashboard](https://dashboard.alchemy.com/).
+- 📃`ETHERSCAN_API_KEY` variable in `packages/hardhat/.env` with your generated API key. You can get your key [here](https://etherscan.io/myapikey).
 
 > 💬 Hint: It's recommended to store env's for nextjs in Vercel/system env config for live apps and use .env.local for local testing.
 
 ## **Checkpoint 12: 📜 Contract Verification**
 
-Run the `yarn verify --network your_network` command to verify your contracts on etherscan 🛰
+Run the `yarn verify --network your_network` command to verify your contracts on etherscan 🛰
 
-👉 Search this address on [Sepolia Etherscan](https://sepolia.etherscan.io/) (or [Optimism Sepolia Etherscan](https://sepolia-optimism.etherscan.io/) if you deployed to OP Sepolia) to get the URL you submit to 🏃‍♀️[SpeedRunEthereum.com](https://speedrunethereum.com/).
+👉 Search this address on [Sepolia Etherscan](https://sepolia.etherscan.io/) (or [Optimism Sepolia Etherscan](https://sepolia-optimism.etherscan.io/) if you deployed to OP Sepolia) to get the URL you submit to 🏃‍♀️[SpeedRunEthereum.com](https://speedrunethereum.com/).
 
-## **Checkpoint 13: 🧠 🍔 Final consideration and food for thought**
+## **Checkpoint 13: 🧠 🍔 Final consideration and food for thought**
 
-Great job making it all the way through! With this challenge, we’ve introduced you to the foundational concepts of how an on-chain prediction market works.
+Great job making it all the way through! With this challenge, we've introduced you to the foundational concepts of how an on-chain prediction market works.
 
 To make your implementation production-ready, there are a few things to keep in mind:
 
-- **Add a time constraint:** You’ll want to include a time-based variable to define when the event outcome should be finalized.
+- **Add a time constraint:** You'll want to include a time-based variable to define when the event outcome should be finalized.
 - **Revisit your oracle setup:** Think about how to make the oracle mechanism less centralized and more trustworthy. A more decentralized approach can greatly improve the integrity of the market.
 - **Rethink token locking:** Instead of locking away tokens upfront, consider alternative mechanisms like virtual trades, having another account simulate initial buys, or any creative solution you come up with.
 - **Incentivize liquidity providers:** You could introduce trading fees (e.g., 3% per trade) and route that revenue to a variable like `s_lpTradingRevenue` to reward liquidity providers.
 - **Explore alternative market designs:** Look into swapping out the current pricing or trading mechanism altogether, for instance, implementing an order book model
 
-One important risk we haven’t explicitly mentioned: as a market creator, **you can lose money**. Here’s a worst-case example based on the current model and the same initial parameters from above (1 ETH initial liquidity, 0.01 ETH token value, 50% initial probability, 10% locked tokens):
+One important risk we haven't explicitly mentioned: as a market creator, **you can lose money**. Here's a worst-case example based on the current model with the following initial parameters:
 
 ---
 
-### ⛔️ Case 1: One user buys 90 “Yes” tokens and “Yes” wins
+### ⛔️ Case 1: One user buys 90 "Yes" tokens and "Yes" wins
 
 - Final probability = (90 + 10) / (10 + 10 + 90 + 0) = **90.9%**
 - Average probability = (50% + 90.9%) / 2 = **70.45%**
 - User buys 90 tokens → **0.01 ETH × 70.45% × 90 = 0.637 ETH**
 - User wins: **0.01 ETH × 90 = 0.9 ETH → 41% profit**
-- LP gains from 10 “Yes” tokens = **0.1 ETH**, plus 0.637 ETH from trade
+- LP gains from 10 "Yes" tokens = **0.1 ETH**, plus 0.637 ETH from trade
 - LP total: **0.1 + 0.637 - 1 = -0.263 ETH** → **~26% loss**
 
 ---
 
-### ✅ Case 2: Same trade, but “No” wins
+### ✅ Case 2: Same trade, but "No" wins
 
 - User loses: 0.637 ETH
-- LP gains from 100 “No” tokens = **1 ETH**, plus 0.637 ETH from trade
+- LP gains from 100 "No" tokens = **1 ETH**, plus 0.637 ETH from trade
 - LP total: **1 + 0.637 - 1 = 0.637 ETH** → **~64% profit**
 
 ---
 
 Keep in mind that if you start with a skewed probability (e.g., 10%), losses in Case 1 can be even higher. Setting the right parameters comes with experience and depends heavily on your goals.
 
-As you can see, there’s no single “perfect” way to build a prediction market. The design space is wide open and invites experimentation and innovation.
+As you can see, there's no single "perfect" way to build a prediction market. The design space is wide open and invites experimentation and innovation.
 
-We hope this challenge gave you a solid foundation and understanding of the core components of prediction markets. We're excited to see how you’ll push the boundaries and come up with your own creative solutions!
+We hope this challenge gave you a solid foundation and understanding of the core components of prediction markets. We're excited to see how you'll push the boundaries and come up with your own creative solutions!
