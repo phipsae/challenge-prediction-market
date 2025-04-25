@@ -10,7 +10,6 @@ contract PredictionMarket is Ownable {
     /////////////////
 
     error PredictionMarket__MustProvideETHForInitialLiquidity();
-    error PredictionMarket__InvalidOutcome();
     error PredictionMarket__InvalidProbability();
     error PredictionMarket__PredictionAlreadyResolved();
     error PredictionMarket__OnlyOracleCanReport();
@@ -18,15 +17,13 @@ contract PredictionMarket is Ownable {
     error PredictionMarket__InsufficientWinningTokens();
     error PredictionMarket__AmountMustBeGreaterThanZero();
     error PredictionMarket__MustSendExactETHAmount();
-    error PredictionMarket__InsufficientTokenReserve();
+    error PredictionMarket__InsufficientTokenReserve(Outcome _outcome, uint256 _amountToken);
     error PredictionMarket__TokenTransferFailed();
-    error PredictionMarket__NoTokensToRedeem();
     error PredictionMarket__ETHTransferFailed();
     error PredictionMarket__InsufficientBalance(uint256 _tradingAmount, uint256 _userBalance);
     error PredictionMarket__InsufficientAllowance(uint256 _tradingAmount, uint256 _allowance);
     error PredictionMarket__InsufficientLiquidity();
     error PredictionMarket__InvalidPercentageToLock();
-    error PredictionMarket__InsufficientTokenBalance();
 
     //////////////////////////
     /// State Variables //////

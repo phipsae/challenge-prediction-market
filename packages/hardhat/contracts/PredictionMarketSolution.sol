@@ -10,7 +10,6 @@ contract PredictionMarketSolution is Ownable {
     /////////////////
 
     error PredictionMarket__MustProvideETHForInitialLiquidity();
-    error PredictionMarket__InvalidOutcome();
     error PredictionMarket__InvalidProbability();
     error PredictionMarket__PredictionAlreadyResolved();
     error PredictionMarket__OnlyOracleCanReport();
@@ -20,13 +19,11 @@ contract PredictionMarketSolution is Ownable {
     error PredictionMarket__MustSendExactETHAmount();
     error PredictionMarket__InsufficientTokenReserve(Outcome _outcome, uint256 _amountToken);
     error PredictionMarket__TokenTransferFailed();
-    error PredictionMarket__NoTokensToRedeem();
     error PredictionMarket__ETHTransferFailed();
     error PredictionMarket__InsufficientBalance(uint256 _tradingAmount, uint256 _userBalance);
     error PredictionMarket__InsufficientAllowance(uint256 _tradingAmount, uint256 _allowance);
     error PredictionMarket__InsufficientLiquidity();
     error PredictionMarket__InvalidPercentageToLock();
-    error PredictionMarket__InsufficientTokenBalance();
 
     //////////////////////////
     /// State Variables //////
@@ -95,7 +92,7 @@ contract PredictionMarketSolution is Ownable {
         uint8 _initialYesProbability,
         uint8 _percentageToLock
     ) payable Ownable(_liquidityProvider) {
-        // /// CHECKPOINT 2 ////
+        /// CHECKPOINT 2 ////
         if (msg.value == 0) {
             revert PredictionMarket__MustProvideETHForInitialLiquidity();
         }
@@ -189,7 +186,7 @@ contract PredictionMarketSolution is Ownable {
      * @param _winningOutcome The winning outcome (YES or NO)
      */
     function report(Outcome _winningOutcome) external predictionNotReported {
-        // //// CHECKPOINT 5 ////
+        //// CHECKPOINT 5 ////
         if (msg.sender != i_oracle) {
             revert PredictionMarket__OnlyOracleCanReport();
         }

@@ -1016,11 +1016,12 @@ function buyTokensWithETH(Outcome _outcome, uint256 _amountTokenToBuy)
     emit TokensPurchased(msg.sender, _outcome, _amountTokenToBuy, msg.value);
 }
 
-function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount) external predictionNotReported {
-    if (_tradingAmount == 0) {
-        revert PredictionMarket__AmountMustBeGreaterThanZero();
-    }
-
+function sellTokensForEth(Outcome _outcome, uint256 _tradingAmount)
+    external
+    amountGreaterThanZero(_tradingAmount)
+    predictionNotReported
+{
+    /// Checkpoint 8 ////
     PredictionMarketToken optionToken = _outcome == Outcome.YES ? i_yesToken : i_noToken;
     uint256 userBalance = optionToken.balanceOf(msg.sender);
     if (userBalance < _tradingAmount) {
