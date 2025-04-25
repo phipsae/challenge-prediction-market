@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { LPAddress } from "./LPAddress";
 import { useQueryClient } from "@tanstack/react-query";
 import { formatEther } from "viem";
 import { useBlockNumber, useReadContract } from "wagmi";
@@ -72,42 +73,39 @@ export function PredictionMarketInfoLP() {
   const winningOption = winningToken === yesToken ? yesOutcome : noOutcome;
 
   return (
-    <div className="bg-base-100">
-      <h2 className="text-2xl font-bold mb-6 text-left">Prediction Market Info for Liquidity Provider</h2>
+    <div className="">
+      <div className="grid grid-cols-1 md:grid-cols-2 border-default divide-x items-center">
+        <div className="p-6">
+          <h3 className="text-xl font-medium">
+            Token Value:{" "}
+            <span className="text-primary font-bold">
+              {Number(formatEther(BigInt(tokenValue ?? 0))).toFixed(4)} ETH
+            </span>
+          </h3>
+          <div className="text-sm">
+            {isReported ? `(Value of winning token "${winningOption}" in ETH)` : "(Value of winning token in ETH)"}
+          </div>
+        </div>
+        <div className="p-6">
+          <LPAddress />
+        </div>
+      </div>
 
-      <div className="space-y-10">
+      <div className="mt-6 space-y-6">
         <div className="">
-          <div className="stats shadow w-full rounded-lg">
-            <div className="stat text-left">
-              <div className="text-xl font-medium">Prediciton Market Collateral</div>
+          <div className="grid grid-cols-1 md:grid-cols-2 border-default divide-x items-center">
+            <div className="p-6">
+              <h3 className="text-xl font-medium">Prediciton Market Collateral</h3>
               <span className="text-sm">(Amount of ETH that goes to the winning token)</span>
-              <div className="stat-value text-primary pt-2">
+              <div className="stat-value text-primary pt-2 font-semibold text-2xl md:text-3xl">
                 {Number(formatEther(BigInt(ethCollateral ?? 0))).toFixed(4)} ETH
               </div>
             </div>
-            <div className="stat text-left">
-              <div className="text-xl font-medium">LP Revenue</div>
+            <div className="p-6">
+              <h3 className="text-xl font-medium">LP Revenue</h3>
               <span className="text-sm">(Token revenue when token gets bought/sold)</span>
-              <div className="stat-value text-primary pt-2">
+              <div className="stat-value text-primary pt-2 font-semibold text-2xl md:text-3xl">
                 {Number(formatEther(BigInt(lpTradingRevenue ?? 0))).toFixed(4)} ETH
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div className="">
-            <div className="flex items-center gap-8">
-              <div>
-                <div className="text-xl font-medium">Token Value</div>
-                <div className="text-sm">
-                  {isReported
-                    ? `(Value of winning token "${winningOption}" in ETH)`
-                    : "(Value of winning token in ETH)"}
-                </div>
-              </div>
-              <div className="text-primary text-2xl font-bold">
-                {Number(formatEther(BigInt(tokenValue ?? 0))).toFixed(4)} ETH
               </div>
             </div>
           </div>
