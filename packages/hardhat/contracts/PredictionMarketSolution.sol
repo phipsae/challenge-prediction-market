@@ -25,9 +25,9 @@ contract PredictionMarketSolution is Ownable {
     error PredictionMarket__InsufficientLiquidity();
     error PredictionMarket__InvalidPercentageToLock();
 
-    //////////////////////////
-    /// State Variables //////
-    //////////////////////////
+    ///////////////////////
+    /// State Variables ///
+    ///////////////////////
 
     enum Outcome {
         YES,
@@ -50,9 +50,10 @@ contract PredictionMarketSolution is Ownable {
 
     PredictionMarketToken public s_winningToken;
     bool public s_isReported;
-    /////////////////////////
-    /// Events //////
-    /////////////////////////
+
+    //////////////
+    /// Events ///
+    //////////////
 
     event TokensPurchased(address indexed buyer, Outcome outcome, uint256 amount, uint256 ethAmount);
     event TokensSold(address indexed seller, Outcome outcome, uint256 amount, uint256 ethAmount);
@@ -99,7 +100,7 @@ contract PredictionMarketSolution is Ownable {
         uint8 _initialYesProbability,
         uint8 _percentageToLock
     ) payable Ownable(_liquidityProvider) {
-        /// CHECKPOINT 2 ////
+        /// Checkpoint 2 ////
         if (msg.value == 0) {
             revert PredictionMarket__MustProvideETHForInitialLiquidity();
         }
@@ -119,9 +120,7 @@ contract PredictionMarketSolution is Ownable {
 
         s_ethCollateral = msg.value;
 
-        /// CHECKPOINT 3 ////
-        // Code goes here
-
+        /// Checkpoint 3 ////
         uint256 initialTokenAmount = (msg.value * PRECISION) / _initialTokenValue;
         i_yesToken = new PredictionMarketToken("Yes", "Y", msg.sender, initialTokenAmount);
         i_noToken = new PredictionMarketToken("No", "N", msg.sender, initialTokenAmount);
@@ -146,7 +145,7 @@ contract PredictionMarketSolution is Ownable {
      * @dev Only the owner can add liquidity and only if the prediction is not reported
      */
     function addLiquidity() external payable onlyOwner predictionNotReported {
-        // //// CHECKPOINT 4 ////
+        //// Checkpoint 4 ////
         s_ethCollateral += msg.value;
 
         uint256 tokensAmount = (msg.value * PRECISION) / i_initialTokenValue;
@@ -163,7 +162,7 @@ contract PredictionMarketSolution is Ownable {
      * @param _ethToWithdraw Amount of ETH to withdraw from liquidity pool
      */
     function removeLiquidity(uint256 _ethToWithdraw) external onlyOwner predictionNotReported {
-        //// CHECKPOINT 4 ////
+        //// Checkpoint 4 ////
         uint256 amountTokenToBurn = (_ethToWithdraw / i_initialTokenValue) * PRECISION;
 
         if (amountTokenToBurn > (i_yesToken.balanceOf(address(this)))) {
@@ -193,7 +192,7 @@ contract PredictionMarketSolution is Ownable {
      * @param _winningOutcome The winning outcome (YES or NO)
      */
     function report(Outcome _winningOutcome) external predictionNotReported {
-        //// CHECKPOINT 5 ////
+        //// Checkpoint 5 ////
         if (msg.sender != i_oracle) {
             revert PredictionMarket__OnlyOracleCanReport();
         }
@@ -208,7 +207,7 @@ contract PredictionMarketSolution is Ownable {
      * @return ethRedeemed The amount of ETH redeemed
      */
     function resolveMarketAndWithdraw() external onlyOwner predictionReported returns (uint256 ethRedeemed) {
-        /// CHECKPOINT 6 ////
+        /// Checkpoint 6 ////
         uint256 contractWinningTokens = s_winningToken.balanceOf(address(this));
         if (contractWinningTokens > 0) {
             ethRedeemed = (contractWinningTokens * i_initialTokenValue) / PRECISION;
@@ -247,7 +246,7 @@ contract PredictionMarketSolution is Ownable {
         amountGreaterThanZero(_amountTokenToBuy)
         predictionNotReported
     {
-        /// CHECKPOINT 8 ////
+        /// Checkpoint 8 ////
         uint256 ethNeeded = getBuyPriceInEth(_outcome, _amountTokenToBuy);
         if (msg.value != ethNeeded) {
             revert PredictionMarket__MustSendExactETHAmount();
@@ -279,7 +278,7 @@ contract PredictionMarketSolution is Ownable {
         amountGreaterThanZero(_tradingAmount)
         predictionNotReported
     {
-        /// CHECKPOINT 8 ////
+        /// Checkpoint 8 ////
         PredictionMarketToken optionToken = _outcome == Outcome.YES ? i_yesToken : i_noToken;
         uint256 userBalance = optionToken.balanceOf(msg.sender);
         if (userBalance < _tradingAmount) {
@@ -314,8 +313,7 @@ contract PredictionMarketSolution is Ownable {
      * @param _amount The amount of winning tokens to redeem
      */
     function redeemWinningTokens(uint256 _amount) external amountGreaterThanZero(_amount) predictionReported {
-        /// CHECKPOINT 9 ////
-
+        /// Checkpoint 9 ////
         if (s_winningToken.balanceOf(msg.sender) < _amount) {
             revert PredictionMarket__InsufficientWinningTokens();
         }
@@ -341,7 +339,7 @@ contract PredictionMarketSolution is Ownable {
      * @return The total ETH price
      */
     function getBuyPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
         return _calculatePriceInEth(_outcome, _tradingAmount, false);
     }
 
@@ -352,7 +350,7 @@ contract PredictionMarketSolution is Ownable {
      * @return The total ETH price
      */
     function getSellPriceInEth(Outcome _outcome, uint256 _tradingAmount) public view returns (uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
         return _calculatePriceInEth(_outcome, _tradingAmount, true);
     }
 
@@ -371,7 +369,7 @@ contract PredictionMarketSolution is Ownable {
         view
         returns (uint256)
     {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
         (uint256 currentTokenReserve, uint256 currentOtherTokenReserve) = _getCurrentReserves(_outcome);
 
         /// Ensure sufficient liquidity when buying
@@ -411,7 +409,7 @@ contract PredictionMarketSolution is Ownable {
      * @return The current reserves of the tokens
      */
     function _getCurrentReserves(Outcome _outcome) private view returns (uint256, uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
         if (_outcome == Outcome.YES) {
             return (i_yesToken.balanceOf(address(this)), i_noToken.balanceOf(address(this)));
         } else {
@@ -426,7 +424,7 @@ contract PredictionMarketSolution is Ownable {
      * @return The probability of the tokens
      */
     function _calculateProbability(uint256 tokensSold, uint256 totalSold) private pure returns (uint256) {
-        /// CHECKPOINT 7 ////
+        /// Checkpoint 7 ////
         return (tokensSold * PRECISION) / totalSold;
     }
 
@@ -459,7 +457,7 @@ contract PredictionMarketSolution is Ownable {
             uint256 percentageLocked
         )
     {
-        /// CHECKPOINT 3 ////
+        /// Checkpoint 3 ////
         oracle = i_oracle;
         initialTokenValue = i_initialTokenValue;
         percentageLocked = i_percentageLocked;
@@ -475,7 +473,7 @@ contract PredictionMarketSolution is Ownable {
         yesTokenReserve = i_yesToken.balanceOf(address(this));
         noTokenReserve = i_noToken.balanceOf(address(this));
 
-        /// CHECKPOINT 5 ////
+        /// Checkpoint 5 ////
         isReported = s_isReported;
         winningToken = address(s_winningToken);
     }
