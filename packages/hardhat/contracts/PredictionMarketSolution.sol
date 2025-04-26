@@ -11,9 +11,9 @@ contract PredictionMarketSolution is Ownable {
 
     error PredictionMarket__MustProvideETHForInitialLiquidity();
     error PredictionMarket__InvalidProbability();
-    error PredictionMarket__PredictionAlreadyResolved();
+    error PredictionMarket__PredictionAlreadyReported();
     error PredictionMarket__OnlyOracleCanReport();
-    error PredictionMarket__PredictionNotResolved();
+    error PredictionMarket__PredictionNotReported();
     error PredictionMarket__InsufficientWinningTokens();
     error PredictionMarket__AmountMustBeGreaterThanZero();
     error PredictionMarket__MustSendExactETHAmount();
@@ -68,7 +68,7 @@ contract PredictionMarketSolution is Ownable {
 
     modifier predictionNotReported() {
         if (s_isReported) {
-            revert PredictionMarket__PredictionAlreadyResolved();
+            revert PredictionMarket__PredictionAlreadyReported();
         }
         _;
     }
@@ -76,6 +76,13 @@ contract PredictionMarketSolution is Ownable {
     modifier amountGreaterThanZero(uint256 _amount) {
         if (_amount == 0) {
             revert PredictionMarket__AmountMustBeGreaterThanZero();
+        }
+        _;
+    }
+
+    modifier predictionReported() {
+        if (!s_isReported) {
+            revert PredictionMarket__PredictionNotReported();
         }
         _;
     }
@@ -200,12 +207,8 @@ contract PredictionMarketSolution is Ownable {
      * @dev Only callable by the owner and only if the prediction is resolved
      * @return ethRedeemed The amount of ETH redeemed
      */
-    function resolveMarketAndWithdraw() external onlyOwner returns (uint256 ethRedeemed) {
+    function resolveMarketAndWithdraw() external onlyOwner predictionReported returns (uint256 ethRedeemed) {
         /// CHECKPOINT 6 ////
-        if (!s_isReported) {
-            revert PredictionMarket__PredictionNotResolved();
-        }
-
         uint256 contractWinningTokens = s_winningToken.balanceOf(address(this));
         if (contractWinningTokens > 0) {
             ethRedeemed = (contractWinningTokens * i_initialTokenValue) / PRECISION;
@@ -310,11 +313,8 @@ contract PredictionMarketSolution is Ownable {
      * @dev Only if the prediction is resolved
      * @param _amount The amount of winning tokens to redeem
      */
-    function redeemWinningTokens(uint256 _amount) external amountGreaterThanZero(_amount) {
+    function redeemWinningTokens(uint256 _amount) external amountGreaterThanZero(_amount) predictionReported {
         /// CHECKPOINT 9 ////
-        if (!s_isReported) {
-            revert PredictionMarket__PredictionNotResolved();
-        }
 
         if (s_winningToken.balanceOf(msg.sender) < _amount) {
             revert PredictionMarket__InsufficientWinningTokens();

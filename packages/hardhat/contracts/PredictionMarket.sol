@@ -11,9 +11,9 @@ contract PredictionMarket is Ownable {
 
     error PredictionMarket__MustProvideETHForInitialLiquidity();
     error PredictionMarket__InvalidProbability();
-    error PredictionMarket__PredictionAlreadyResolved();
+    error PredictionMarket__PredictionAlreadyReported();
     error PredictionMarket__OnlyOracleCanReport();
-    error PredictionMarket__PredictionNotResolved();
+    error PredictionMarket__PredictionNotReported();
     error PredictionMarket__InsufficientWinningTokens();
     error PredictionMarket__AmountMustBeGreaterThanZero();
     error PredictionMarket__MustSendExactETHAmount();
