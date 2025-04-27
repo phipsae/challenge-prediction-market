@@ -13,6 +13,7 @@ contract PredictionMarketSolution is Ownable {
     error PredictionMarket__InvalidProbability();
     error PredictionMarket__PredictionAlreadyReported();
     error PredictionMarket__OnlyOracleCanReport();
+    error PredictionMarket__OwnerCannotCall();
     error PredictionMarket__PredictionNotReported();
     error PredictionMarket__InsufficientWinningTokens();
     error PredictionMarket__AmountMustBeGreaterThanZero();
@@ -84,6 +85,13 @@ contract PredictionMarketSolution is Ownable {
     modifier predictionReported() {
         if (!s_isReported) {
             revert PredictionMarket__PredictionNotReported();
+        }
+        _;
+    }
+
+    modifier notOwner() {
+        if (msg.sender == owner()) {
+            revert PredictionMarket__OwnerCannotCall();
         }
         _;
     }
@@ -245,6 +253,7 @@ contract PredictionMarketSolution is Ownable {
         payable
         amountGreaterThanZero(_amountTokenToBuy)
         predictionNotReported
+        notOwner
     {
         /// Checkpoint 8 ////
         uint256 ethNeeded = getBuyPriceInEth(_outcome, _amountTokenToBuy);
@@ -277,6 +286,7 @@ contract PredictionMarketSolution is Ownable {
         external
         amountGreaterThanZero(_tradingAmount)
         predictionNotReported
+        notOwner
     {
         /// Checkpoint 8 ////
         PredictionMarketToken optionToken = _outcome == Outcome.YES ? i_yesToken : i_noToken;
@@ -312,7 +322,7 @@ contract PredictionMarketSolution is Ownable {
      * @dev Only if the prediction is resolved
      * @param _amount The amount of winning tokens to redeem
      */
-    function redeemWinningTokens(uint256 _amount) external amountGreaterThanZero(_amount) predictionReported {
+    function redeemWinningTokens(uint256 _amount) external amountGreaterThanZero(_amount) predictionReported notOwner {
         /// Checkpoint 9 ////
         if (s_winningToken.balanceOf(msg.sender) < _amount) {
             revert PredictionMarket__InsufficientWinningTokens();
