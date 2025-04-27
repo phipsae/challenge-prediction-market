@@ -13,6 +13,7 @@ contract PredictionMarket is Ownable {
     error PredictionMarket__InvalidProbability();
     error PredictionMarket__PredictionAlreadyReported();
     error PredictionMarket__OnlyOracleCanReport();
+    error PredictionMarket__OwnerCannotCall();
     error PredictionMarket__PredictionNotReported();
     error PredictionMarket__InsufficientWinningTokens();
     error PredictionMarket__AmountMustBeGreaterThanZero();
