@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { PredictionMarket } from "../typechain-types";
 
-describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
+describe("📈📉🏎️ Prediction Markets Challenge", function () {
   // We define a fixture to reuse the same setup in every test.
 
   let predictionMarket: PredictionMarket;
@@ -352,7 +352,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to add liquidity after prediction is reported
       await expect(
         predictionMarket.connect(owner).addLiquidity({ value: ethers.parseEther("1") }),
-      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyResolved");
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyReported");
     });
 
     it("Should revert when trying to remove liquidity after prediction is reported", async function () {
@@ -375,7 +375,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to remove liquidity after prediction is reported
       await expect(
         predictionMarket.connect(owner).removeLiquidity(ethers.parseEther("1")),
-      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyResolved");
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyReported");
     });
 
     it("Should revert when trying to report after prediction is reported", async function () {
@@ -398,7 +398,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to report again
       await expect(predictionMarket.connect(oracle).report(0)).to.be.revertedWithCustomError(
         predictionMarket,
-        "PredictionMarket__PredictionAlreadyResolved",
+        "PredictionMarket__PredictionAlreadyReported",
       );
     });
 
@@ -542,7 +542,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to resolve before reporting
       await expect(predictionMarket.connect(owner).resolveMarketAndWithdraw()).to.be.revertedWithCustomError(
         predictionMarket,
-        "PredictionMarket__PredictionNotResolved",
+        "PredictionMarket__PredictionNotReported",
       );
     });
 
@@ -993,7 +993,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
     });
 
     it("Should revert when trying to buy tokens with incorrect ETH amount", async function () {
-      const [owner, oracle] = await ethers.getSigners();
+      const [owner, oracle, buyer] = await ethers.getSigners();
       const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
       const predictionMarket = await predictionMarketFactory.deploy(
         owner.address,
@@ -1016,7 +1016,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
 
       // Try to buy with incorrect ETH amount
       await expect(
-        predictionMarket.connect(owner).buyTokensWithETH(0, amountToBuy, { value: requiredEth + BigInt(1) }),
+        predictionMarket.connect(buyer).buyTokensWithETH(0, amountToBuy, { value: requiredEth + BigInt(1) }),
       ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__MustSendExactETHAmount");
     });
 
@@ -1244,7 +1244,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to buy tokens after prediction is reported
       await expect(
         predictionMarket.connect(buyer).buyTokensWithETH(0, amountToBuy, { value: requiredEth }),
-      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyResolved");
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionAlreadyReported");
     });
 
     it("Should revert when trying to sell tokens after prediction is reported", async function () {
@@ -1279,7 +1279,39 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to sell tokens after prediction is reported
       await expect(predictionMarket.connect(seller).sellTokensForEth(0, amountToBuy)).to.be.revertedWithCustomError(
         predictionMarket,
-        "PredictionMarket__PredictionAlreadyResolved",
+        "PredictionMarket__PredictionAlreadyReported",
+      );
+    });
+
+    it("Owner cannot buy or sell tokens", async function () {
+      const [owner] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        owner.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Get token contract
+      const yesTokenAddress = await predictionMarket.i_yesToken();
+      const yesToken = await ethers.getContractAt("PredictionMarketToken", yesTokenAddress);
+      const amountToBuy = (await yesToken.balanceOf(predictionMarket.getAddress())) / BigInt(10);
+      const requiredEth = await predictionMarket.getBuyPriceInEth(0, amountToBuy);
+
+      // Owner tries to buy tokens
+      await expect(
+        predictionMarket.connect(owner).buyTokensWithETH(0, amountToBuy, { value: requiredEth }),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__OwnerCannotCall");
+
+      // Owner tries to sell tokens (even if owner doesn't have tokens, should revert on owner check)
+      await expect(predictionMarket.connect(owner).sellTokensForEth(0, amountToBuy)).to.be.revertedWithCustomError(
+        predictionMarket,
+        "PredictionMarket__OwnerCannotCall",
       );
     });
   });
@@ -1302,7 +1334,7 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       // Try to redeem before prediction is reported
       await expect(
         predictionMarket.connect(redeemer).redeemWinningTokens(ethers.parseEther("1")),
-      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionNotResolved");
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__PredictionNotReported");
     });
 
     it("Should revert when trying to redeem more tokens than owned", async function () {
@@ -1440,6 +1472,29 @@ describe("🚩 Challenge 6: 📈📉🏎️ Prediction Market", function () {
       await expect(predictionMarket.connect(redeemer).redeemWinningTokens(amountToBuy))
         .to.emit(predictionMarket, "WinningTokensRedeemed")
         .withArgs(redeemer.address, amountToBuy, expectedEthToReceive);
+    });
+
+    it("Owner cannot redeem tokens", async function () {
+      const [owner, oracle] = await ethers.getSigners();
+      const predictionMarketFactory = await ethers.getContractFactory(contractArtifact);
+      const predictionMarket = await predictionMarketFactory.deploy(
+        owner.address,
+        oracle.address,
+        "Test Question",
+        ethers.parseEther("1"),
+        50,
+        20,
+        { value: ethers.parseEther("10") },
+      );
+      await predictionMarket.waitForDeployment();
+
+      // Report YES as winning outcome
+      await predictionMarket.connect(oracle).report(0);
+
+      // Attempt to redeem as owner (should revert)
+      await expect(
+        predictionMarket.connect(owner).redeemWinningTokens(ethers.parseEther("1")),
+      ).to.be.revertedWithCustomError(predictionMarket, "PredictionMarket__OwnerCannotCall");
     });
   });
 });
