@@ -297,9 +297,7 @@ The locking of tokens serves two purposes:
 
 2. **Smooths price movements** early on. Since the token price is calculated as:
 
-   $$
-   tokenPrice = i\_initialTokenValue * marketProbability
-   $$
+   $$tokenPrice = i_initialTokenValue * marketProbability$$
 
 > 💡 The percentage can be chosen arbitrarily, it depends on how you want to set up the prediction market. The more you lock from the beginning the lesser are the price swings but also there is less liquidity to trade.
 
